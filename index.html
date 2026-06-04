@@ -1,619 +1,567 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Dr. Janani – Clinic Token System</title>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Dr. Janani – Gynaecology Clinic</title>
 
 <!-- Firebase SDKs -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
-
-<!-- Google Fonts -->
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
 
 <style>
-  :root {
-    --rose: #C2185B;
-    --rose-light: #FCE4EC;
-    --rose-mid: #E91E8C;
-    --teal: #00796B;
-    --teal-light: #E0F2F1;
-    --gold: #F9A825;
-    --gold-light: #FFF8E1;
-    --bg: #FFF9FB;
-    --surface: #FFFFFF;
-    --surface2: #FFF0F5;
-    --text: #1A0A12;
-    --text2: #6B3A50;
-    --text3: #B07090;
-    --border: rgba(194,24,91,0.13);
-    --radius: 16px;
-    --radius-sm: 10px;
-    --shadow: 0 4px 24px rgba(194,24,91,0.10);
-    --shadow-hover: 0 8px 32px rgba(194,24,91,0.18);
-    --font-display: 'Playfair Display', serif;
-    --font-body: 'DM Sans', sans-serif;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: var(--font-body);
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    font-size: 15px;
-    line-height: 1.6;
-  }
+:root{
+  --rose:#C2185B;--rose-dark:#880E4F;--rose-light:#FCE4EC;--rose-mid:#E91E63;
+  --teal:#00796B;--teal-light:#E0F2F1;--teal-dark:#004D40;
+  --gold:#F9A825;--gold-light:#FFF8E1;
+  --purple:#6A1B9A;--purple-light:#F3E5F5;
+  --bg:#FFF9FB;--surface:#FFFFFF;--surface2:#FFF0F5;
+  --text:#1A0A12;--text2:#6B3A50;--text3:#B07090;
+  --border:rgba(194,24,91,0.13);
+  --radius:16px;--radius-sm:10px;--radius-xs:6px;
+  --shadow:0 4px 24px rgba(194,24,91,0.10);
+  --shadow-lg:0 8px 40px rgba(194,24,91,0.18);
+  --font-display:'Playfair Display',serif;
+  --font-body:'DM Sans',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-height:100vh;font-size:15px;line-height:1.6;}
 
-  /* ── SCREENS ── */
-  .screen { display: none; min-height: 100vh; flex-direction: column; }
-  .screen.active { display: flex; }
+/* ── SCREENS ── */
+.screen{display:none;min-height:100vh;flex-direction:column;}
+.screen.active{display:flex;}
 
-  /* ── LOGIN ── */
-  #loginScreen {
-    background: linear-gradient(145deg, #FCE4EC 0%, #FFF9FB 40%, #E0F2F1 100%);
-    align-items: center;
-    justify-content: flex-start;
-    padding: 0;
-    flex-direction: column;
-  }
-  .login-hero {
-    width: 100%;
-    background: var(--rose);
-    padding: 32px 24px 24px;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-  }
-  .login-hero::before {
-    content: '';
-    position: absolute;
-    top: -40px; right: -40px;
-    width: 200px; height: 200px;
-    background: rgba(255,255,255,0.08);
-    border-radius: 50%;
-  }
-  .login-hero::after {
-    content: '';
-    position: absolute;
-    bottom: -60px; left: -20px;
-    width: 160px; height: 160px;
-    background: rgba(255,255,255,0.05);
-    border-radius: 50%;
-  }
-  .doctor-photo-wrap {
-    width: 100px; height: 100px;
-    border-radius: 50%;
-    border: 4px solid rgba(255,255,255,0.5);
-    margin: 0 auto 14px;
-    overflow: hidden;
-    background: rgba(255,255,255,0.2);
-    display: flex; align-items: center; justify-content: center;
-    position: relative; z-index: 1;
-  }
-  .doctor-photo-wrap img { width: 100%; height: 100%; object-fit: cover; }
-  .doctor-photo-placeholder {
-    font-size: 40px; color: rgba(255,255,255,0.7);
-  }
-  .login-title {
-    font-family: var(--font-display);
-    font-size: 28px;
-    color: #fff;
-    letter-spacing: -0.5px;
-    position: relative; z-index: 1;
-  }
-  .login-subtitle {
-    color: rgba(255,255,255,0.8);
-    font-size: 14px;
-    margin-top: 4px;
-    position: relative; z-index: 1;
-  }
-  .login-cards {
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-    padding: 28px 20px;
-    width: 100%;
-    max-width: 420px;
-    margin: 0 auto;
-  }
-  .role-card {
-    background: var(--surface);
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius);
-    padding: 18px 20px;
-    display: flex; align-items: center; gap: 14px;
-    cursor: pointer;
-    transition: all 0.2s;
-    box-shadow: var(--shadow);
-  }
-  .role-card:hover { box-shadow: var(--shadow-hover); transform: translateY(-2px); border-color: var(--rose); }
-  .role-icon {
-    width: 50px; height: 50px;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 22px; flex-shrink: 0;
-  }
-  .role-icon.doctor { background: #FCE4EC; }
-  .role-icon.assistant { background: #E0F2F1; }
-  .role-icon.patient { background: #FFF8E1; }
-  .role-card h3 { font-size: 16px; font-weight: 600; color: var(--text); }
-  .role-card p { font-size: 12px; color: var(--text3); margin-top: 2px; }
-  .google-btn {
-    display: flex; align-items: center; gap: 8px;
-    font-size: 13px; font-weight: 500; color: var(--rose);
-    margin-top: 4px;
-  }
-  .google-btn svg { width: 16px; height: 16px; }
-  /* Ad Banner */
-  .ad-banner {
-    width: calc(100% - 40px);
-    max-width: 420px;
-    margin: 0 auto 8px;
-    background: linear-gradient(120deg, #fff8e1, #fff3e0);
-    border: 1.5px solid #F9A825;
-    border-radius: var(--radius-sm);
-    padding: 12px 16px;
-    display: flex; align-items: center; gap: 12px;
-  }
-  .star-logo { font-size: 28px; }
-  .ad-text { font-size: 12px; }
-  .ad-text strong { color: #E65100; display: block; font-size: 13px; }
-  .ad-text span { color: #BF360C; }
+/* ══════════════════════════════════
+   LOGIN SCREEN — FULL REDESIGN
+══════════════════════════════════ */
+#loginScreen{
+  background:linear-gradient(160deg,#FCE4EC 0%,#FFF9FB 50%,#E0F2F1 100%);
+  flex-direction:column;align-items:center;
+}
 
-  /* ── APP LAYOUT ── */
-  #appScreen { flex-direction: column; }
-  .app-header {
-    background: var(--rose);
-    padding: 14px 18px;
-    display: flex; align-items: center; justify-content: space-between;
-    position: sticky; top: 0; z-index: 100;
-    box-shadow: 0 2px 12px rgba(194,24,91,0.2);
-  }
-  .app-header-left { display: flex; align-items: center; gap: 10px; }
-  .header-logo { font-family: var(--font-display); font-size: 18px; color: #fff; font-weight: 700; }
-  .header-subtitle { font-size: 11px; color: rgba(255,255,255,0.75); }
-  .header-user { display: flex; align-items: center; gap: 8px; }
-  .user-avatar {
-    width: 34px; height: 34px; border-radius: 50%;
-    background: rgba(255,255,255,0.25); color: #fff;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 14px; font-weight: 600; overflow: hidden;
-  }
-  .user-avatar img { width: 100%; height: 100%; object-fit: cover; }
-  .role-badge {
-    font-size: 11px; font-weight: 600; padding: 3px 10px;
-    border-radius: 20px; background: rgba(255,255,255,0.25); color: #fff;
-  }
-  .btn-logout {
-    background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3);
-    color: #fff; font-size: 12px; padding: 5px 12px; border-radius: 20px;
-    cursor: pointer; font-family: var(--font-body);
-  }
+/* HERO BANNER */
+.login-hero{
+  width:100%;
+  background:linear-gradient(135deg,var(--rose-dark) 0%,var(--rose) 60%,#AD1457 100%);
+  padding:0;
+  position:relative;overflow:hidden;
+  display:flex;flex-direction:column;
+}
+.hero-top{
+  display:flex;align-items:center;gap:0;
+  min-height:220px;
+  position:relative;z-index:2;
+}
+/* decorative circles */
+.hero-circle1{position:absolute;top:-50px;right:-50px;width:220px;height:220px;border-radius:50%;background:rgba(255,255,255,0.07);}
+.hero-circle2{position:absolute;bottom:-70px;left:-30px;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,0.05);}
+.hero-circle3{position:absolute;top:20px;left:50%;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,0.04);}
 
-  /* ── TABS ── */
-  .tabs {
-    display: flex; gap: 0;
-    background: var(--surface);
-    border-bottom: 2px solid var(--border);
-    overflow-x: auto; padding: 0 18px;
-  }
-  .tab-btn {
-    background: none; border: none; cursor: pointer;
-    font-family: var(--font-body); font-size: 13px;
-    font-weight: 500; color: var(--text2);
-    padding: 12px 16px;
-    border-bottom: 2px solid transparent;
-    margin-bottom: -2px; white-space: nowrap;
-    transition: all 0.2s;
-  }
-  .tab-btn:hover { color: var(--rose); }
-  .tab-btn.active { color: var(--rose); border-bottom-color: var(--rose); font-weight: 600; }
+/* Doctor Photo – left side */
+.hero-photo-col{
+  width:160px;flex-shrink:0;
+  display:flex;align-items:flex-end;justify-content:center;
+  padding:0 0 0 20px;
+  align-self:flex-end;
+}
+.hero-doctor-photo{
+  width:140px;height:160px;
+  border-radius:var(--radius) var(--radius) 0 0;
+  overflow:hidden;
+  background:rgba(255,255,255,0.15);
+  border:3px solid rgba(255,255,255,0.3);
+  border-bottom:none;
+  display:flex;align-items:center;justify-content:center;
+  font-size:64px;
+}
+.hero-doctor-photo img{width:100%;height:100%;object-fit:cover;object-position:top;}
 
-  /* ── TAB CONTENT ── */
-  .tab-content { display: none; flex: 1; overflow-y: auto; padding: 18px; }
-  .tab-content.active { display: block; }
+/* Clinic Info – right side */
+.hero-info-col{
+  flex:1;padding:28px 24px 24px 20px;
+  display:flex;flex-direction:column;justify-content:center;
+}
+.hero-clinic-tag{
+  font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;
+  color:rgba(255,255,255,0.65);margin-bottom:6px;
+}
+.hero-doc-name{
+  font-family:var(--font-display);font-size:28px;color:#fff;
+  line-height:1.1;letter-spacing:-0.5px;margin-bottom:4px;
+}
+.hero-doc-spec{
+  font-size:13px;color:rgba(255,255,255,0.82);margin-bottom:14px;
+  font-weight:500;
+}
+.hero-badges{display:flex;flex-wrap:wrap;gap:6px;}
+.hero-badge{
+  font-size:11px;font-weight:600;
+  background:rgba(255,255,255,0.15);
+  border:1px solid rgba(255,255,255,0.25);
+  color:rgba(255,255,255,0.9);
+  padding:3px 10px;border-radius:20px;
+}
 
-  /* ── CARDS ── */
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 18px 20px;
-    box-shadow: var(--shadow);
-    margin-bottom: 16px;
-  }
-  .card h2 {
-    font-family: var(--font-display);
-    font-size: 20px; font-weight: 600;
-    color: var(--text); margin-bottom: 14px;
-  }
-  .card h3 { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 10px; }
+/* Hospital info strip */
+.hero-strip{
+  background:rgba(0,0,0,0.2);
+  padding:10px 20px;
+  display:flex;flex-wrap:wrap;gap:14px;
+  position:relative;z-index:2;
+}
+.hero-strip-item{
+  display:flex;align-items:center;gap:5px;
+  font-size:11px;color:rgba(255,255,255,0.75);
+}
+.hero-strip-item span{font-size:13px;}
 
-  /* ── CLINIC CARD ── */
-  .clinic-card {
-    background: var(--surface2);
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: 16px 18px;
-    margin-bottom: 12px;
-    position: relative;
-  }
-  .clinic-card.inactive { opacity: 0.55; }
-  .clinic-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
-  .clinic-name { font-size: 15px; font-weight: 600; color: var(--text); }
-  .clinic-loc { font-size: 12px; color: var(--text3); margin-top: 2px; }
-  .clinic-status {
-    font-size: 11px; font-weight: 600; padding: 4px 12px;
-    border-radius: 20px; white-space: nowrap;
-  }
-  .clinic-status.open { background: #E0F7FA; color: #00796B; }
-  .clinic-status.closed { background: #FCE4EC; color: #C2185B; }
-  .clinic-status.holiday { background: #FFF3E0; color: #E65100; }
-  .clinic-info { display: flex; gap: 16px; margin-top: 10px; flex-wrap: wrap; }
-  .clinic-stat { font-size: 12px; color: var(--text2); }
-  .clinic-stat strong { display: block; font-size: 18px; font-weight: 600; color: var(--rose); }
-  .toggle-wrap { display: flex; align-items: center; gap: 8px; margin-top: 12px; }
-  .toggle { position: relative; width: 40px; height: 22px; }
-  .toggle input { opacity: 0; width: 0; height: 0; }
-  .toggle-slider {
-    position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
-    background: #ccc; border-radius: 22px; transition: 0.3s;
-  }
-  .toggle-slider::before {
-    content: ''; position: absolute;
-    height: 16px; width: 16px; left: 3px; bottom: 3px;
-    background: white; border-radius: 50%; transition: 0.3s;
-  }
-  input:checked + .toggle-slider { background: var(--rose); }
-  input:checked + .toggle-slider::before { transform: translateX(18px); }
-  .toggle-label { font-size: 13px; color: var(--text2); }
+/* Gynaecology content area */
+.gyno-section{
+  width:100%;max-width:460px;
+  padding:16px 20px 8px;
+}
+.gyno-title{
+  font-family:var(--font-display);font-size:16px;color:var(--rose-dark);
+  margin-bottom:10px;
+}
+.gyno-pills{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px;}
+.gyno-pill{
+  font-size:11px;font-weight:500;
+  background:var(--rose-light);color:var(--rose);
+  border:1px solid rgba(194,24,91,0.2);
+  padding:4px 12px;border-radius:20px;
+  display:flex;align-items:center;gap:4px;
+}
 
-  /* ── FORMS ── */
-  .form-row { margin-bottom: 14px; }
-  .form-row label { display: block; font-size: 13px; font-weight: 500; color: var(--text2); margin-bottom: 5px; }
-  .form-row input, .form-row select, .form-row textarea {
-    width: 100%; padding: 10px 14px;
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius-sm);
-    font-family: var(--font-body); font-size: 14px;
-    background: var(--surface); color: var(--text);
-    transition: border-color 0.2s;
-  }
-  .form-row input:focus, .form-row select:focus {
-    outline: none; border-color: var(--rose);
-  }
-  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  @media (max-width: 480px) { .form-grid { grid-template-columns: 1fr; } }
+/* Timing card */
+.timing-card{
+  background:var(--surface);
+  border:1.5px solid var(--border);
+  border-radius:var(--radius-sm);
+  padding:12px 16px;margin-bottom:14px;
+  display:flex;gap:12px;flex-wrap:wrap;
+}
+.timing-slot{flex:1;min-width:120px;}
+.timing-label{font-size:10px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--text3);margin-bottom:3px;}
+.timing-val{font-size:14px;font-weight:600;color:var(--text);}
+.timing-sub{font-size:11px;color:var(--text3);}
 
-  /* ── BUTTONS ── */
-  .btn {
-    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-    padding: 10px 20px; border-radius: var(--radius-sm);
-    font-family: var(--font-body); font-size: 14px; font-weight: 600;
-    cursor: pointer; border: none; transition: all 0.2s; text-decoration: none;
-  }
-  .btn-primary { background: var(--rose); color: white; }
-  .btn-primary:hover { background: #A0154C; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(194,24,91,0.3); }
-  .btn-secondary { background: var(--rose-light); color: var(--rose); border: 1.5px solid var(--rose); }
-  .btn-teal { background: var(--teal); color: white; }
-  .btn-teal:hover { background: #00574B; }
-  .btn-sm { padding: 6px 14px; font-size: 13px; }
-  .btn-block { width: 100%; }
+/* Login cards */
+.login-cards-area{
+  width:100%;max-width:460px;
+  padding:0 20px 20px;
+}
+.login-cards-title{font-size:12px;font-weight:600;color:var(--text3);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:10px;}
+.role-card{
+  background:var(--surface);
+  border:1.5px solid var(--border);
+  border-radius:var(--radius);
+  padding:14px 18px;
+  display:flex;align-items:center;gap:14px;
+  cursor:pointer;transition:all 0.2s;
+  box-shadow:var(--shadow);margin-bottom:10px;
+}
+.role-card:hover{box-shadow:var(--shadow-lg);transform:translateY(-2px);border-color:var(--rose);}
+.role-icon-wrap{
+  width:48px;height:48px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;flex-shrink:0;
+}
+.role-icon-wrap.dr{background:var(--rose-light);}
+.role-icon-wrap.as{background:var(--teal-light);}
+.role-icon-wrap.pt{background:var(--gold-light);}
+.role-card h3{font-size:15px;font-weight:600;color:var(--text);}
+.role-card p{font-size:12px;color:var(--text3);margin-top:1px;}
+.google-btn{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:500;color:var(--rose);margin-top:5px;white-space:nowrap;}
+.google-btn svg{width:14px;height:14px;}
 
-  /* ── TOKEN LIST ── */
-  .token-item {
-    display: flex; align-items: center; gap: 12px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: 12px 16px; margin-bottom: 10px;
-    transition: all 0.2s;
-  }
-  .token-item:hover { border-color: var(--rose); box-shadow: var(--shadow); }
-  .token-num {
-    width: 44px; height: 44px; border-radius: 50%;
-    background: var(--rose); color: white;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 15px; font-weight: 700; flex-shrink: 0;
-  }
-  .token-num.waiting { background: var(--teal); }
-  .token-num.called { background: var(--gold); color: #333; }
-  .token-num.consulting { background: #7B1FA2; }
-  .token-num.done { background: #388E3C; }
-  .token-info { flex: 1; }
-  .token-name { font-size: 14px; font-weight: 600; color: var(--text); }
-  .token-meta { font-size: 12px; color: var(--text3); margin-top: 2px; }
-  .token-status-badge {
-    font-size: 11px; font-weight: 600; padding: 3px 10px;
-    border-radius: 20px;
-  }
-  .status-waiting { background: #E0F2F1; color: #00796B; }
-  .status-called { background: #FFF8E1; color: #F57F17; }
-  .status-consulting { background: #EDE7F6; color: #4527A0; }
-  .status-done { background: #E8F5E9; color: #1B5E20; }
+/* Ad banner */
+.ad-banner{
+  margin:0 0 10px;
+  background:linear-gradient(120deg,#fff8e1,#fff3e0);
+  border:1.5px solid #F9A825;border-radius:var(--radius-sm);
+  padding:10px 14px;display:flex;align-items:center;gap:10px;
+}
+.ad-text{font-size:11px;}
+.ad-text strong{color:#E65100;display:block;font-size:12px;}
 
-  /* ── BIG TOKEN ── */
-  .my-token-display {
-    text-align: center; padding: 32px 20px;
-    background: linear-gradient(135deg, var(--rose-light) 0%, white 100%);
-    border-radius: var(--radius);
-    border: 2px solid var(--rose);
-    margin-bottom: 20px;
-  }
-  .big-token-num {
-    font-family: var(--font-display);
-    font-size: 88px; font-weight: 700;
-    color: var(--rose); line-height: 1;
-  }
-  .big-token-label { font-size: 14px; color: var(--text2); margin-top: 8px; }
-  .token-queue-info {
-    font-size: 13px; color: var(--text3);
-    margin-top: 6px;
-  }
+/* ══════════════════════════════════
+   APP SCREEN
+══════════════════════════════════ */
+#appScreen{flex-direction:column;}
 
-  /* ── POPUP NOTIFICATION ── */
-  #popupNotif {
-    position: fixed; bottom: 20px; left: 50%;
-    transform: translateX(-50%) translateY(100px);
-    background: #1A0A12;
-    color: white; padding: 14px 20px;
-    border-radius: var(--radius);
-    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-    font-size: 14px; z-index: 9999;
-    max-width: 360px; width: 90%;
-    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-    display: flex; align-items: flex-start; gap: 12px;
-  }
-  #popupNotif.show { transform: translateX(-50%) translateY(0); }
-  .notif-icon { font-size: 22px; flex-shrink: 0; }
-  .notif-title { font-weight: 600; font-size: 14px; }
-  .notif-body { font-size: 12px; opacity: 0.8; margin-top: 2px; }
-  .notif-close { position: absolute; top: 10px; right: 12px; cursor: pointer; opacity: 0.6; font-size: 16px; }
+/* APP HEADER */
+.app-header{
+  background:var(--rose);padding:0 18px;
+  display:flex;align-items:center;justify-content:space-between;
+  height:56px;position:sticky;top:0;z-index:100;
+  box-shadow:0 2px 14px rgba(194,24,91,0.25);
+}
+.app-header-left{display:flex;align-items:center;gap:10px;}
+.hdr-photo{
+  width:36px;height:36px;border-radius:50%;
+  background:rgba(255,255,255,0.2);overflow:hidden;
+  border:2px solid rgba(255,255,255,0.35);
+  display:flex;align-items:center;justify-content:center;font-size:18px;
+}
+.hdr-photo img{width:100%;height:100%;object-fit:cover;}
+.hdr-name{font-family:var(--font-display);font-size:16px;color:#fff;font-weight:700;}
+.hdr-sub{font-size:10px;color:rgba(255,255,255,0.7);}
+.header-user{display:flex;align-items:center;gap:8px;}
+.role-badge{font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;background:rgba(255,255,255,0.22);color:#fff;}
+.user-avatar{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.22);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;overflow:hidden;}
+.user-avatar img{width:100%;height:100%;object-fit:cover;}
+.btn-logout{background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:#fff;font-size:12px;padding:5px 12px;border-radius:20px;cursor:pointer;font-family:var(--font-body);}
 
-  /* ── STATS ROW ── */
-  .stats-row {
-    display: grid; grid-template-columns: repeat(3, 1fr);
-    gap: 10px; margin-bottom: 16px;
-  }
-  .stat-box {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: 14px 16px; text-align: center;
-  }
-  .stat-box .val { font-size: 28px; font-weight: 700; color: var(--rose); }
-  .stat-box .lbl { font-size: 11px; color: var(--text3); margin-top: 2px; }
+/* TABS */
+.tabs{display:flex;background:var(--surface);border-bottom:2px solid var(--border);overflow-x:auto;padding:0 18px;scrollbar-width:none;}
+.tabs::-webkit-scrollbar{display:none;}
+.tab-btn{background:none;border:none;cursor:pointer;font-family:var(--font-body);font-size:13px;font-weight:500;color:var(--text2);padding:11px 14px;border-bottom:2.5px solid transparent;margin-bottom:-2px;white-space:nowrap;transition:all 0.2s;}
+.tab-btn:hover{color:var(--rose);}
+.tab-btn.active{color:var(--rose);border-bottom-color:var(--rose);font-weight:600;}
 
-  /* ── CALL PANEL ── */
-  .call-panel {
-    background: #EDE7F6;
-    border: 2px solid #7B1FA2;
-    border-radius: var(--radius);
-    padding: 18px; margin-bottom: 16px;
-  }
-  .call-panel h3 { color: #4527A0; font-size: 15px; margin-bottom: 12px; }
-  .call-input-row { display: flex; gap: 10px; align-items: flex-end; }
-  .call-input-row input {
-    flex: 1; padding: 9px 14px;
-    border: 1.5px solid #9C27B0;
-    border-radius: var(--radius-sm);
-    font-family: var(--font-body); font-size: 14px;
-    background: white;
-  }
+/* TAB CONTENT */
+.tab-content{display:none;flex:1;overflow-y:auto;padding:16px 18px;}
+.tab-content.active{display:block;}
 
-  /* ── SCHEDULE TABLE ── */
-  .sched-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  .sched-table th { background: var(--rose-light); color: var(--rose); text-align: left; padding: 8px 12px; }
-  .sched-table td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
-  .sched-table tr:last-child td { border-bottom: none; }
+/* ── CARDS ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow);margin-bottom:14px;}
+.card h2{font-family:var(--font-display);font-size:19px;font-weight:600;color:var(--text);margin-bottom:12px;}
+.card h3{font-size:14px;font-weight:600;color:var(--text);margin-bottom:8px;}
+.section-title{font-size:12px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--text3);margin:14px 0 8px;}
 
-  /* ── HOLIDAY CHIP ── */
-  .holiday-chip {
-    display: inline-flex; align-items: center; gap: 6px;
-    background: #FFF3E0; border: 1px solid #FFCC02;
-    color: #E65100; font-size: 12px; font-weight: 500;
-    padding: 4px 10px; border-radius: 20px; margin: 4px;
-  }
-  .holiday-chip .rm { cursor: pointer; opacity: 0.6; }
-  .holiday-chip .rm:hover { opacity: 1; }
+/* ── OVERVIEW DOCTOR PROFILE HERO ── */
+.overview-hero{
+  background:linear-gradient(135deg,var(--rose-dark),var(--rose));
+  border-radius:var(--radius);padding:0;overflow:hidden;
+  display:flex;margin-bottom:14px;min-height:130px;
+  box-shadow:var(--shadow-lg);
+}
+.ov-photo-col{
+  width:110px;flex-shrink:0;
+  display:flex;align-items:flex-end;justify-content:center;
+  padding:0 0 0 14px;
+}
+.ov-doctor-img{
+  width:96px;height:110px;
+  border-radius:10px 10px 0 0;
+  overflow:hidden;background:rgba(255,255,255,0.15);
+  border:2px solid rgba(255,255,255,0.3);border-bottom:none;
+  display:flex;align-items:center;justify-content:center;font-size:44px;
+}
+.ov-doctor-img img{width:100%;height:100%;object-fit:cover;object-position:top;}
+.ov-info{flex:1;padding:16px 16px 16px 14px;color:white;}
+.ov-tag{font-size:10px;opacity:0.6;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:4px;}
+.ov-name{font-family:var(--font-display);font-size:20px;line-height:1.1;margin-bottom:3px;}
+.ov-spec{font-size:12px;opacity:0.82;font-weight:500;margin-bottom:10px;}
+.ov-chips{display:flex;flex-wrap:wrap;gap:5px;}
+.ov-chip{font-size:10px;font-weight:600;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25);color:rgba(255,255,255,0.9);padding:2px 9px;border-radius:20px;}
 
-  /* ── BOOKING SESSION TYPE ── */
-  .session-picker { display: flex; gap: 10px; margin-bottom: 16px; }
-  .session-opt {
-    flex: 1; padding: 12px; text-align: center;
-    border: 2px solid var(--border); border-radius: var(--radius-sm);
-    cursor: pointer; transition: all 0.2s;
-    font-size: 13px; font-weight: 500;
-  }
-  .session-opt:hover { border-color: var(--rose); background: var(--rose-light); }
-  .session-opt.selected { border-color: var(--rose); background: var(--rose-light); color: var(--rose); }
-  .session-opt .s-icon { font-size: 22px; display: block; margin-bottom: 6px; }
+/* ── GYNAECOLOGY SERVICES CARD ── */
+.services-card{
+  background:linear-gradient(135deg,#FFF0F5,#FFF9FB);
+  border:1.5px solid var(--border);border-radius:var(--radius);
+  padding:14px 16px;margin-bottom:14px;
+}
+.services-title{font-family:var(--font-display);font-size:15px;color:var(--rose-dark);margin-bottom:10px;}
+.services-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.service-item{
+  display:flex;align-items:flex-start;gap:8px;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius-sm);padding:9px 11px;
+}
+.service-icon{font-size:18px;flex-shrink:0;}
+.service-name{font-size:12px;font-weight:600;color:var(--text);}
+.service-desc{font-size:10px;color:var(--text3);margin-top:1px;}
 
-  /* ── HISTORY ── */
-  .history-item {
-    border-left: 3px solid var(--rose);
-    padding: 8px 14px; margin-bottom: 10px;
-    background: var(--surface);
-    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-  }
-  .history-item .h-date { font-size: 11px; color: var(--text3); }
-  .history-item .h-clinic { font-size: 14px; font-weight: 600; }
-  .history-item .h-token { font-size: 13px; color: var(--text2); }
+/* ── STAR HEALTH AD ── */
+.star-health-ad{
+  background:linear-gradient(120deg,#FFF8E1,#FFF3E0);
+  border:1.5px solid var(--gold);border-radius:var(--radius-sm);
+  padding:12px 14px;display:flex;align-items:center;gap:12px;margin-bottom:14px;
+}
+.star-ad-icon{font-size:26px;flex-shrink:0;}
+.star-ad-tag{font-size:10px;font-weight:700;color:#E65100;letter-spacing:0.06em;text-transform:uppercase;}
+.star-ad-title{font-size:13px;font-weight:600;color:#BF360C;margin:1px 0;}
+.star-ad-sub{font-size:11px;color:#8D3200;}
 
-  /* ── ADMIN AD SECTION ── */
-  .ad-config {
-    background: linear-gradient(135deg, #FFF8E1, #FFF3E0);
-    border: 2px dashed #F9A825;
-    border-radius: var(--radius-sm);
-    padding: 16px; margin-bottom: 12px; text-align: center;
-  }
-  .ad-config-title { font-size: 13px; font-weight: 600; color: #E65100; margin-bottom: 6px; }
+/* ── STATS ── */
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;}
+.stat-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:13px 14px;text-align:center;}
+.stat-box .val{font-size:26px;font-weight:700;color:var(--rose);}
+.stat-box .lbl{font-size:10px;color:var(--text3);margin-top:2px;}
 
-  /* ── STAR HEALTH AD ── */
-  .star-health-ad {
-    background: linear-gradient(135deg, #FFF8E1 0%, #FFF3CD 100%);
-    border: 2px solid #F9A825;
-    border-radius: var(--radius);
-    padding: 16px 20px;
-    margin-bottom: 16px;
-    display: flex; align-items: center; gap: 14px;
-  }
-  .star-ad-icon { font-size: 36px; }
-  .star-ad-body { flex: 1; }
-  .star-ad-tag { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #F57F17; font-weight: 600; }
-  .star-ad-title { font-size: 15px; font-weight: 700; color: #E65100; }
-  .star-ad-sub { font-size: 12px; color: #BF360C; }
+/* ── CLINIC CARDS ── */
+.clinic-card{background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:10px;position:relative;}
+.clinic-card.inactive{opacity:0.55;}
+.clinic-header{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;}
+.clinic-name-text{font-size:14px;font-weight:600;color:var(--text);}
+.clinic-loc{font-size:11px;color:var(--text3);margin-top:2px;}
+.clinic-status{font-size:11px;font-weight:600;padding:3px 11px;border-radius:20px;white-space:nowrap;}
+.clinic-status.open{background:#E0F7FA;color:#00796B;}
+.clinic-status.closed{background:#FCE4EC;color:#C2185B;}
+.clinic-status.holiday{background:#FFF3E0;color:#E65100;}
+.clinic-info-row{display:flex;gap:14px;margin-top:8px;flex-wrap:wrap;}
+.clinic-stat{font-size:11px;color:var(--text2);}
+.clinic-stat strong{display:block;font-size:15px;font-weight:600;color:var(--rose);}
+.toggle-wrap{display:flex;align-items:center;gap:8px;margin-top:10px;}
+.toggle{position:relative;width:38px;height:20px;}
+.toggle input{opacity:0;width:0;height:0;}
+.toggle-slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:#ccc;border-radius:20px;transition:0.3s;}
+.toggle-slider::before{content:'';position:absolute;height:14px;width:14px;left:3px;bottom:3px;background:white;border-radius:50%;transition:0.3s;}
+input:checked+.toggle-slider{background:var(--rose);}
+input:checked+.toggle-slider::before{transform:translateX(18px);}
+.toggle-label{font-size:12px;color:var(--text2);}
 
-  /* ── DOCTOR PROFILE ── */
-  .doctor-profile-card {
-    background: linear-gradient(135deg, var(--rose) 0%, #AD1457 100%);
-    border-radius: var(--radius);
-    padding: 22px 20px;
-    color: white; margin-bottom: 16px;
-    display: flex; align-items: center; gap: 16px;
-  }
-  .doc-photo {
-    width: 72px; height: 72px; border-radius: 50%;
-    border: 3px solid rgba(255,255,255,0.4);
-    background: rgba(255,255,255,0.2);
-    overflow: hidden; display: flex; align-items: center; justify-content: center;
-    font-size: 30px; flex-shrink: 0;
-  }
-  .doc-photo img { width: 100%; height: 100%; object-fit: cover; }
-  .doc-name { font-family: var(--font-display); font-size: 20px; font-weight: 700; }
-  .doc-spec { font-size: 13px; opacity: 0.85; margin-top: 2px; }
-  .doc-clinics { font-size: 12px; opacity: 0.7; margin-top: 4px; }
+/* ── TOKEN TIME CONTROL ── */
+.time-control-card{
+  background:linear-gradient(135deg,var(--rose-light),#FFF9FB);
+  border:1.5px solid var(--border);border-radius:var(--radius);
+  padding:14px 16px;margin-bottom:14px;
+}
+.time-control-title{font-size:13px;font-weight:600;color:var(--rose-dark);margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+.time-slots-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.time-slot-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;}
+.ts-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;color:var(--text3);margin-bottom:6px;}
+.ts-row{display:flex;align-items:center;gap:6px;margin-bottom:4px;}
+.ts-row label{font-size:11px;color:var(--text2);width:36px;}
+.ts-row input[type=time]{flex:1;font-size:12px;padding:4px 7px;border:1px solid var(--border);border-radius:6px;font-family:var(--font-body);}
+.token-open-toggle{display:flex;align-items:center;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);}
+.token-open-label{font-size:13px;font-weight:500;color:var(--text2);}
+.save-btn-sm{background:var(--rose);color:white;border:none;padding:6px 16px;border-radius:var(--radius-sm);font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font-body);}
+.save-btn-sm:hover{background:var(--rose-dark);}
 
-  /* ── SECTION TITLE ── */
-  .section-title {
-    font-family: var(--font-display);
-    font-size: 17px; font-weight: 600;
-    color: var(--text); margin-bottom: 12px;
-    display: flex; align-items: center; gap: 8px;
-  }
-  .section-title::after {
-    content: ''; flex: 1; height: 1px;
-    background: var(--border);
-  }
+/* ── FORMS ── */
+.form-row{margin-bottom:12px;}
+.form-row label{display:block;font-size:12px;font-weight:500;color:var(--text2);margin-bottom:4px;}
+.form-row input,.form-row select,.form-row textarea{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:var(--font-body);font-size:13px;background:var(--surface);color:var(--text);transition:border-color 0.2s;outline:none;}
+.form-row input:focus,.form-row select:focus{border-color:var(--rose);}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+@media(max-width:480px){.form-grid{grid-template-columns:1fr;}}
 
-  /* ── EMPTY STATE ── */
-  .empty-state { text-align: center; padding: 40px 20px; }
-  .empty-icon { font-size: 48px; margin-bottom: 12px; }
-  .empty-text { font-size: 14px; color: var(--text3); }
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 18px;border-radius:var(--radius-sm);font-family:var(--font-body);font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all 0.2s;}
+.btn-primary{background:var(--rose);color:white;}
+.btn-primary:hover{background:var(--rose-dark);transform:translateY(-1px);box-shadow:0 4px 12px rgba(194,24,91,0.3);}
+.btn-secondary{background:var(--rose-light);color:var(--rose);border:1.5px solid var(--rose);}
+.btn-teal{background:var(--teal);color:white;}
+.btn-teal:hover{background:var(--teal-dark);}
+.btn-sm{padding:5px 13px;font-size:12px;}
+.btn-block{width:100%;}
 
-  /* ── LOADING ── */
-  .loading { text-align: center; padding: 40px; color: var(--text3); font-size: 14px; }
+/* ── SESSION PICKER ── */
+.session-picker{display:flex;gap:8px;}
+.session-opt{flex:1;padding:10px;border:2px solid var(--border);border-radius:var(--radius-sm);text-align:center;cursor:pointer;transition:all 0.2s;font-size:13px;font-weight:500;color:var(--text2);}
+.session-opt.selected{border-color:var(--rose);background:var(--rose-light);color:var(--rose);}
+.s-icon{display:block;font-size:20px;margin-bottom:4px;}
 
-  /* ── ALERT ── */
-  .alert {
-    padding: 10px 16px; border-radius: var(--radius-sm);
-    font-size: 13px; margin-bottom: 12px;
-  }
-  .alert-success { background: #E8F5E9; color: #1B5E20; border-left: 3px solid #4CAF50; }
-  .alert-error { background: #FFEBEE; color: #B71C1C; border-left: 3px solid #F44336; }
-  .alert-info { background: #E3F2FD; color: #0D47A1; border-left: 3px solid #2196F3; }
+/* ── TOKEN LIST ── */
+.token-item{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:11px 14px;margin-bottom:8px;transition:all 0.2s;}
+.token-item:hover{border-color:var(--rose);box-shadow:var(--shadow);}
+.token-num-circle{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0;color:white;}
+.token-num-circle.waiting{background:var(--teal);}
+.token-num-circle.called{background:var(--gold);color:#333;}
+.token-num-circle.consulting{background:var(--purple);}
+.token-num-circle.done{background:#388E3C;}
+.token-info{flex:1;}
+.token-name{font-size:13px;font-weight:600;color:var(--text);}
+.token-meta{font-size:11px;color:var(--text3);margin-top:2px;}
+.token-status-badge{font-size:10px;font-weight:600;padding:3px 9px;border-radius:20px;}
+.status-waiting{background:#E0F2F1;color:#00796B;}
+.status-called{background:#FFF8E1;color:#F57F17;}
+.status-consulting{background:#EDE7F6;color:#4527A0;}
+.status-done{background:#E8F5E9;color:#1B5E20;}
 
-  /* ── SCROLL HELPER ── */
-  ::-webkit-scrollbar { width: 4px; height: 4px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: rgba(194,24,91,0.3); border-radius: 4px; }
+/* ── MY TOKEN (patient) ── */
+.my-token-display{
+  text-align:center;padding:28px 18px;
+  background:linear-gradient(135deg,var(--rose-light),white);
+  border-radius:var(--radius);border:2px solid var(--rose);margin-bottom:16px;
+}
+.big-token-num{font-family:var(--font-display);font-size:80px;font-weight:700;color:var(--rose);line-height:1;}
+.big-token-label{font-size:13px;color:var(--text2);margin-top:6px;}
+.token-queue-info{font-size:12px;color:var(--text3);margin-top:5px;}
 
-  /* ── MODAL ── */
-  .modal-overlay {
-    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(26,10,18,0.6); z-index: 200;
-    display: flex; align-items: flex-end; justify-content: center;
-    display: none;
-  }
-  .modal-overlay.open { display: flex; }
-  .modal {
-    background: var(--surface);
-    border-radius: var(--radius) var(--radius) 0 0;
-    padding: 24px 20px; width: 100%; max-width: 500px;
-    max-height: 85vh; overflow-y: auto;
-  }
-  .modal h2 { font-family: var(--font-display); font-size: 20px; margin-bottom: 16px; }
-  .modal-close { float: right; cursor: pointer; font-size: 20px; color: var(--text3); }
+/* ── CALL PANEL ── */
+.call-panel{background:#EDE7F6;border:2px solid #7B1FA2;border-radius:var(--radius);padding:14px 16px;margin-bottom:14px;}
+.call-input-row{display:flex;gap:8px;margin-top:8px;}
+.call-input-row input{flex:1;padding:8px 12px;border:1.5px solid #9C27B0;border-radius:var(--radius-sm);font-family:var(--font-body);font-size:13px;}
 
-  /* ── FLOATING ADD BTN ── */
-  .fab {
-    position: fixed; bottom: 24px; right: 24px;
-    width: 54px; height: 54px; border-radius: 50%;
-    background: var(--rose); color: white;
-    border: none; font-size: 26px; cursor: pointer;
-    box-shadow: 0 4px 20px rgba(194,24,91,0.4);
-    z-index: 50; display: flex; align-items: center; justify-content: center;
-    transition: all 0.2s;
-  }
-  .fab:hover { transform: scale(1.1); }
-  .fab.hidden { display: none; }
+/* ── ALERTS ── */
+.alert{padding:10px 14px;border-radius:var(--radius-sm);font-size:13px;margin-top:8px;}
+.alert-success{background:#E8F5E9;color:#1B5E20;border:1px solid #A5D6A7;}
+.alert-error{background:#FFEBEE;color:#C62828;border:1px solid #EF9A9A;}
+.alert-info{background:#E3F2FD;color:#0D47A1;border:1px solid #90CAF9;}
 
-  /* Responsive */
-  @media (max-width: 400px) {
-    .stats-row { grid-template-columns: 1fr 1fr; }
-    .big-token-num { font-size: 60px; }
-  }
+/* ── EMPTY STATE ── */
+.empty-state{text-align:center;padding:40px 20px;}
+.empty-icon{font-size:48px;margin-bottom:12px;}
+.empty-text{font-size:14px;color:var(--text3);}
+.loading{text-align:center;padding:24px;color:var(--text3);font-size:13px;}
+
+/* ── HOLIDAYS ── */
+.holiday-chip{display:inline-flex;align-items:center;gap:6px;background:var(--gold-light);border:1px solid var(--gold);border-radius:20px;padding:4px 12px;margin:4px;font-size:12px;}
+.chip-del{cursor:pointer;color:#E65100;font-weight:700;margin-left:4px;}
+
+/* ── HISTORY ── */
+.history-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:8px;}
+.h-date{font-size:11px;color:var(--text3);}
+.h-clinic{font-size:13px;font-weight:600;color:var(--text);margin-top:3px;}
+.h-token{font-size:12px;color:var(--text2);margin-top:3px;}
+
+/* ── POPUP NOTIFICATION ── */
+#popupNotif{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(120px);background:#1A0A12;color:white;padding:13px 18px;border-radius:var(--radius);box-shadow:0 8px 32px rgba(0,0,0,0.3);font-size:13px;z-index:9999;max-width:360px;width:90%;transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1);display:flex;align-items:flex-start;gap:12px;}
+#popupNotif.show{transform:translateX(-50%) translateY(0);}
+.notif-icon{font-size:20px;flex-shrink:0;}
+.notif-title{font-weight:600;font-size:13px;}
+.notif-body{font-size:11px;opacity:0.8;margin-top:2px;}
+.notif-close{position:absolute;top:10px;right:12px;cursor:pointer;opacity:0.6;font-size:15px;}
+
+/* ── MODALS ── */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(26,10,18,0.5);z-index:500;align-items:center;justify-content:center;padding:16px;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--surface);border-radius:var(--radius);padding:22px;width:100%;max-width:420px;max-height:90vh;overflow-y:auto;position:relative;box-shadow:0 16px 60px rgba(0,0,0,0.25);}
+.modal h2{font-family:var(--font-display);font-size:18px;margin-bottom:14px;}
+.modal-close{position:absolute;top:14px;right:16px;cursor:pointer;font-size:20px;color:var(--text3);}
+
+/* ── TOKEN OPEN TIME INDICATOR on patient side ── */
+.token-open-status{
+  display:flex;align-items:center;gap:8px;
+  padding:10px 14px;border-radius:var(--radius-sm);
+  margin-bottom:12px;font-size:13px;font-weight:500;
+}
+.token-open-status.open{background:#E0F7FA;color:#00796B;border:1px solid #80CBC4;}
+.token-open-status.closed{background:#FCE4EC;color:#C2185B;border:1px solid #F48FB1;}
+.tos-dot{width:8px;height:8px;border-radius:50%;background:currentColor;animation:blink 1.5s infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:0.2;}}
+
+/* ── DOC PHOTO small ── */
+.doc-photo{width:64px;height:64px;border-radius:50%;overflow:hidden;background:var(--rose-light);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;}
+.doc-photo img{width:100%;height:100%;object-fit:cover;}
+
+/* ── PATIENT BOOK hero ── */
+.patient-hero{
+  background:linear-gradient(135deg,var(--rose-dark),var(--rose));
+  border-radius:var(--radius);padding:14px 16px;
+  display:flex;align-items:center;gap:14px;
+  margin-bottom:14px;color:white;
+}
+.ph-name{font-family:var(--font-display);font-size:17px;}
+.ph-spec{font-size:11px;opacity:0.78;margin-top:2px;}
+.ph-avail{font-size:11px;font-weight:600;background:rgba(255,255,255,0.2);border-radius:20px;padding:2px 9px;display:inline-block;margin-top:5px;}
 </style>
 </head>
 <body>
 
 <!-- ═══════════════ LOGIN SCREEN ═══════════════ -->
 <div class="screen active" id="loginScreen">
+
+  <!-- HERO BANNER with Doctor Photo + Clinic Info -->
   <div class="login-hero">
-    <div class="doctor-photo-wrap" id="heroPhoto">
-      <div class="doctor-photo-placeholder">👩‍⚕️</div>
+    <div class="hero-circle1"></div>
+    <div class="hero-circle2"></div>
+    <div class="hero-circle3"></div>
+    <div class="hero-top">
+      <!-- Doctor Photo -->
+      <div class="hero-photo-col">
+        <div class="hero-doctor-photo" id="heroPhoto">👩‍⚕️</div>
+      </div>
+      <!-- Clinic Info -->
+      <div class="hero-info-col">
+        <div class="hero-clinic-tag">Gynaecology &amp; Women's Health</div>
+        <div class="hero-doc-name">Dr. Janani</div>
+        <div class="hero-doc-spec">M.B.B.S, M.D. · Senior Gynaecologist</div>
+        <div class="hero-badges">
+          <span class="hero-badge">🏥 Multi-Clinic</span>
+          <span class="hero-badge">15+ Yrs Exp</span>
+          <span class="hero-badge">🌅 Morning &amp; 🌆 Evening</span>
+        </div>
+      </div>
     </div>
-    <div class="login-title">Dr. Janani</div>
-    <div class="login-subtitle">M.B.B.S, M.D. — Obstetrician & Gynaecologist</div>
+    <!-- Info Strip -->
+    <div class="hero-strip">
+      <div class="hero-strip-item"><span>📍</span> Chennai, Tamil Nadu</div>
+      <div class="hero-strip-item"><span>📞</span> +91 98765 43210</div>
+      <div class="hero-strip-item"><span>🌐</span> Token-based OPD</div>
+      <div class="hero-strip-item"><span id="heroTokenStatus">⏳</span> <span id="heroTokenText">Checking...</span></div>
+    </div>
   </div>
 
-  <div class="login-cards">
-    <p style="font-size:13px; color:var(--text3); text-align:center; margin-bottom:4px;">Sign in to continue</p>
+  <!-- Gynaecology Services + Timing -->
+  <div class="gyno-section">
+    <div class="gyno-title">Our Specialised Services</div>
+    <div class="gyno-pills">
+      <div class="gyno-pill">🤰 Antenatal Care</div>
+      <div class="gyno-pill">👶 Delivery &amp; Postnatal</div>
+      <div class="gyno-pill">🔬 PCOS Treatment</div>
+      <div class="gyno-pill">💊 Fertility Support</div>
+      <div class="gyno-pill">🩺 Menstrual Disorders</div>
+      <div class="gyno-pill">🏥 Laparoscopy</div>
+      <div class="gyno-pill">🔭 Colposcopy</div>
+      <div class="gyno-pill">💉 Vaccinations</div>
+    </div>
+    <!-- Timing Card -->
+    <div class="timing-card" id="loginTimingCard">
+      <div class="timing-slot">
+        <div class="timing-label">🌅 Morning OPD</div>
+        <div class="timing-val" id="loginMorningTime">09:00 – 12:00</div>
+        <div class="timing-sub">Mon – Sat</div>
+      </div>
+      <div class="timing-slot">
+        <div class="timing-label">🌆 Evening OPD</div>
+        <div class="timing-val" id="loginEveningTime">05:00 – 08:00 PM</div>
+        <div class="timing-sub">Mon – Sat</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Login Cards -->
+  <div class="login-cards-area">
+    <div class="login-cards-title">Login to Continue</div>
 
     <div class="role-card" onclick="signIn('doctor')">
-      <div class="role-icon doctor">👩‍⚕️</div>
+      <div class="role-icon-wrap dr">👩‍⚕️</div>
       <div style="flex:1">
         <h3>Doctor Login</h3>
-        <p>Manage clinics, tokens & patient flow</p>
-      </div>
-      <div class="google-btn">
-        <svg viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.616z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.964 10.706A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.706V4.962H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.038l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.962L3.964 7.294C4.672 5.163 6.656 3.58 9 3.58z"/></svg>
-        Google Sign In
+        <p>Manage clinics, tokens &amp; schedule</p>
+        <div class="google-btn">
+          <svg viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.616z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.964 10.706A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.706V4.962H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.038l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.962L3.964 7.294C4.672 5.163 6.656 3.58 9 3.58z"/></svg>
+          Sign in with Google
+        </div>
       </div>
     </div>
 
     <div class="role-card" onclick="signIn('assistant')">
-      <div class="role-icon assistant">🩺</div>
+      <div class="role-icon-wrap as">🩺</div>
       <div style="flex:1">
         <h3>Assistant Login</h3>
-        <p>View & manage patient tokens</p>
-      </div>
-      <div class="google-btn">
-        <svg viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.616z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.964 10.706A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.706V4.962H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.038l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.962L3.964 7.294C4.672 5.163 6.656 3.58 9 3.58z"/></svg>
-        Google Sign In
+        <p>Call tokens &amp; manage patient queue</p>
+        <div class="google-btn">
+          <svg viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.616z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.964 10.706A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.706V4.962H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.038l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.962L3.964 7.294C4.672 5.163 6.656 3.58 9 3.58z"/></svg>
+          Sign in with Google
+        </div>
       </div>
     </div>
 
     <div class="role-card" onclick="signIn('patient')">
-      <div class="role-icon patient">👤</div>
+      <div class="role-icon-wrap pt">👤</div>
       <div style="flex:1">
         <h3>Patient Login</h3>
-        <p>Book token & track your number</p>
-      </div>
-      <div class="google-btn">
-        <svg viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.616z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.964 10.706A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.706V4.962H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.038l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.962L3.964 7.294C4.672 5.163 6.656 3.58 9 3.58z"/></svg>
-        Google Sign In
+        <p>Book token &amp; track your number live</p>
+        <div class="google-btn">
+          <svg viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.616z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.964 10.706A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.706V4.962H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.038l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.962L3.964 7.294C4.672 5.163 6.656 3.58 9 3.58z"/></svg>
+          Sign in with Google
+        </div>
       </div>
     </div>
 
-    <!-- Star Health Ad -->
     <div class="ad-banner">
-      <div class="star-logo">⭐</div>
+      <div style="font-size:26px;">⭐</div>
       <div class="ad-text">
         <strong>Star Health Insurance</strong>
-        <span>Protect your family's health — Plans from ₹500/month</span>
+        <span>Maternity &amp; Women's health plans · From ₹500/month</span>
       </div>
     </div>
   </div>
@@ -621,12 +569,14 @@
 
 <!-- ═══════════════ APP SCREEN ═══════════════ -->
 <div class="screen" id="appScreen">
+
   <!-- Header -->
   <div class="app-header">
     <div class="app-header-left">
+      <div class="hdr-photo" id="hdrPhoto">👩‍⚕️</div>
       <div>
-        <div class="header-logo">Dr. Janani</div>
-        <div class="header-subtitle">Clinic Token System</div>
+        <div class="hdr-name">Dr. Janani</div>
+        <div class="hdr-sub">Gynaecology Clinic</div>
       </div>
     </div>
     <div class="header-user">
@@ -636,20 +586,42 @@
     </div>
   </div>
 
-  <!-- Tabs – will be set dynamically -->
+  <!-- Tabs -->
   <div class="tabs" id="tabsBar"></div>
 
   <!-- Tab Contents -->
-  <div style="flex:1; overflow-y:auto;">
+  <div style="flex:1;overflow-y:auto;">
 
-    <!-- DOCTOR TABS -->
+    <!-- ── DOCTOR: OVERVIEW ── -->
     <div class="tab-content" id="tab-overview">
-      <div class="doctor-profile-card">
-        <div class="doc-photo" id="docPhotoMain"><span>👩‍⚕️</span></div>
-        <div>
-          <div class="doc-name">Dr. Janani</div>
-          <div class="doc-spec">M.B.B.S, M.D. — Gynaecologist</div>
-          <div class="doc-clinics" id="docClinicsCount">Loading clinics…</div>
+
+      <!-- Doctor Hero -->
+      <div class="overview-hero">
+        <div class="ov-photo-col">
+          <div class="ov-doctor-img" id="docPhotoMain"><span>👩‍⚕️</span></div>
+        </div>
+        <div class="ov-info">
+          <div class="ov-tag">Senior Consultant</div>
+          <div class="ov-name">Dr. Janani</div>
+          <div class="ov-spec">M.B.B.S, M.D. · Gynaecologist &amp; Obstetrician</div>
+          <div class="ov-chips">
+            <span class="ov-chip" id="docClinicsCount">— Clinics</span>
+            <span class="ov-chip">15+ Yrs</span>
+            <span class="ov-chip">Women's Health</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Gynaecology Services -->
+      <div class="services-card">
+        <div class="services-title">Specialised Services</div>
+        <div class="services-grid">
+          <div class="service-item"><div class="service-icon">🤰</div><div><div class="service-name">Antenatal Care</div><div class="service-desc">Pregnancy monitoring</div></div></div>
+          <div class="service-item"><div class="service-icon">👶</div><div><div class="service-name">Delivery &amp; Postnatal</div><div class="service-desc">Safe motherhood</div></div></div>
+          <div class="service-item"><div class="service-icon">🔬</div><div><div class="service-name">PCOS / Hormonal</div><div class="service-desc">Endocrine balance</div></div></div>
+          <div class="service-item"><div class="service-icon">💊</div><div><div class="service-name">Fertility Support</div><div class="service-desc">IVF consultation</div></div></div>
+          <div class="service-item"><div class="service-icon">🩺</div><div><div class="service-name">Menstrual Disorders</div><div class="service-desc">Cycle management</div></div></div>
+          <div class="service-item"><div class="service-icon">🏥</div><div><div class="service-name">Laparoscopy</div><div class="service-desc">Minimal-invasive</div></div></div>
         </div>
       </div>
 
@@ -657,12 +629,13 @@
       <div class="star-health-ad">
         <div class="star-ad-icon">⭐</div>
         <div class="star-ad-body">
-          <div class="star-ad-tag">Proud Partner — Star Health</div>
+          <div class="star-ad-tag">Proud Partner · Star Health</div>
           <div class="star-ad-title">Star Health Insurance Advisor</div>
-          <div class="star-ad-sub">Comprehensive health plans for you & family · Call 1800-123-4567</div>
+          <div class="star-ad-sub">Maternity cover · New-born benefit · Cashless at 14,000+ hospitals · Call 1800-123-4567</div>
         </div>
       </div>
 
+      <!-- Stats -->
       <div class="stats-row" id="overviewStats">
         <div class="stat-box"><div class="val" id="st-total">0</div><div class="lbl">Today's Tokens</div></div>
         <div class="stat-box"><div class="val" id="st-waiting">0</div><div class="lbl">Waiting</div></div>
@@ -673,54 +646,80 @@
       <div id="clinicList"><div class="loading">Loading…</div></div>
     </div>
 
+    <!-- ── DOCTOR: TOKENS ── -->
     <div class="tab-content" id="tab-tokens">
       <div class="card">
         <h2>All Tokens</h2>
-        <!-- Clinic filter -->
-        <div class="form-row">
-          <label>Filter by Clinic</label>
-          <select id="tokenClinicFilter" onchange="loadAllTokens()">
-            <option value="">All Clinics</option>
-          </select>
-        </div>
-        <div class="form-row">
-          <label>Filter by Date</label>
-          <input type="date" id="tokenDateFilter" onchange="loadAllTokens()" />
-        </div>
+        <div class="form-row"><label>Filter by Clinic</label><select id="tokenClinicFilter" onchange="loadAllTokens()"><option value="">All Clinics</option></select></div>
+        <div class="form-row"><label>Filter by Date</label><input type="date" id="tokenDateFilter" onchange="loadAllTokens()"/></div>
       </div>
-
-      <!-- Call panel (Doctor / Assistant only) -->
       <div class="call-panel" id="callPanel">
         <h3>📣 Call Patients</h3>
-        <p style="font-size:12px;color:#4527A0;margin-bottom:10px;">Enter token numbers to call (single or batch)</p>
+        <p style="font-size:11px;color:#4527A0;margin-bottom:8px;">Enter token numbers (single, batch: 3,5,7 or range: 3-7)</p>
         <div class="call-input-row">
-          <input type="text" id="callTokenInput" placeholder="e.g. 5 or 3,5,7 or 3-7" />
+          <input type="text" id="callTokenInput" placeholder="e.g. 5 or 3,5,7 or 3-7"/>
           <button class="btn btn-teal btn-sm" onclick="callTokens()">Call</button>
         </div>
-        <div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;">
+        <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;">
           <button class="btn btn-sm btn-secondary" onclick="markConsulting()">Start Consulting</button>
           <button class="btn btn-sm btn-primary" onclick="markDone()">Mark Done</button>
         </div>
       </div>
-
       <div id="allTokensList"><div class="loading">Loading tokens…</div></div>
     </div>
 
+    <!-- ── DOCTOR: CLINICS ── -->
     <div class="tab-content" id="tab-clinics">
       <div class="section-title">Manage Clinics</div>
       <div id="manageClinics"><div class="loading">Loading…</div></div>
       <button class="btn btn-primary btn-block" style="margin-top:8px" onclick="openAddClinicModal()">+ Add New Clinic</button>
     </div>
 
+    <!-- ── DOCTOR: SCHEDULE ── -->
     <div class="tab-content" id="tab-schedule">
+
+      <!-- TOKEN TIME CONTROL per clinic -->
       <div class="card">
-        <h2>Holidays & Blocked Dates</h2>
-        <p style="font-size:13px;color:var(--text3);margin-bottom:14px;">Patients cannot book tokens on these dates.</p>
+        <h2>⏰ Token Open Time Control</h2>
+        <p style="font-size:12px;color:var(--text3);margin-bottom:12px;">Set the exact time window when patients can book tokens. Outside these hours, booking is automatically disabled.</p>
+        <div class="form-row">
+          <label>Select Clinic</label>
+          <select id="timeControlClinicSel" onchange="loadClinicTimeControl()">
+            <option value="">-- Select Clinic --</option>
+          </select>
+        </div>
+        <div id="timeControlArea" style="display:none;">
+          <div class="time-slots-grid">
+            <div class="time-slot-box">
+              <div class="ts-label">🌅 Morning Session</div>
+              <div class="ts-row"><label>Open</label><input type="time" id="tc-mopen"/></div>
+              <div class="ts-row"><label>Close</label><input type="time" id="tc-mclose"/></div>
+            </div>
+            <div class="time-slot-box">
+              <div class="ts-label">🌆 Evening Session</div>
+              <div class="ts-row"><label>Open</label><input type="time" id="tc-eopen"/></div>
+              <div class="ts-row"><label>Close</label><input type="time" id="tc-eclose"/></div>
+            </div>
+          </div>
+          <div class="token-open-toggle" style="margin-top:10px;">
+            <label class="toggle"><input type="checkbox" id="tc-tokenOpen"/><span class="toggle-slider"></span></label>
+            <span class="token-open-label">Token Booking Enabled (Manual Override)</span>
+          </div>
+          <div style="margin-top:12px;display:flex;gap:8px;align-items:center;">
+            <button class="save-btn-sm" onclick="saveClinicTimeControl()">Save Changes</button>
+            <span id="tcSaveMsg" style="font-size:12px;color:var(--teal);"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>📅 Holidays &amp; Blocked Dates</h2>
+        <p style="font-size:12px;color:var(--text3);margin-bottom:12px;">Patients cannot book tokens on these dates.</p>
         <div class="form-row">
           <label>Add Holiday / Block Date</label>
           <div style="display:flex;gap:8px;">
-            <input type="date" id="holidayDateIn" style="flex:1" />
-            <input type="text" id="holidayLabelIn" placeholder="Reason (optional)" style="flex:1.5" />
+            <input type="date" id="holidayDateIn" style="flex:1"/>
+            <input type="text" id="holidayLabelIn" placeholder="Reason (optional)" style="flex:1.5"/>
             <button class="btn btn-primary btn-sm" onclick="addHoliday()">Add</button>
           </div>
         </div>
@@ -728,171 +727,155 @@
       </div>
     </div>
 
+    <!-- ── DOCTOR: SETTINGS ── -->
     <div class="tab-content" id="tab-settings">
       <div class="card">
         <h2>Doctor Photo</h2>
         <div style="display:flex;align-items:center;gap:14px;margin-bottom:12px;">
           <div class="doc-photo" id="settingsPhoto"><span>👩‍⚕️</span></div>
           <div>
-            <p style="font-size:13px;color:var(--text2);">Upload your profile photo</p>
-            <input type="file" id="photoInput" accept="image/*" style="margin-top:8px;font-size:13px;" onchange="uploadPhoto(event)" />
+            <p style="font-size:12px;color:var(--text2);">Upload your profile photo (shown on all screens)</p>
+            <input type="file" id="photoInput" accept="image/*" style="margin-top:8px;font-size:12px;" onchange="uploadPhoto(event)"/>
           </div>
         </div>
         <div id="photoMsg"></div>
       </div>
       <div class="card">
         <h2>Advertise Here</h2>
-        <div class="ad-config">
-          <div class="ad-config-title">⭐ Star Health Insurance · Sponsor</div>
-          <p style="font-size:12px;color:#BF360C;margin-top:4px;">Star Health Insurance is displayed across all screens. Contact your Star Health advisor to update ad content.</p>
+        <div style="background:var(--gold-light);border:1px solid var(--gold);border-radius:var(--radius-sm);padding:10px 12px;margin-bottom:12px;">
+          <div style="font-size:12px;font-weight:700;color:#E65100;">⭐ Star Health Insurance · Sponsor</div>
+          <p style="font-size:11px;color:#BF360C;margin-top:4px;">Star Health Insurance is displayed across all screens.</p>
         </div>
-        <div class="form-row">
-          <label>Custom Ad Text (optional)</label>
-          <input type="text" id="adTextInput" placeholder="Enter ad tagline…" />
-        </div>
+        <div class="form-row"><label>Custom Ad Text (optional)</label><input type="text" id="adTextInput" placeholder="Enter ad tagline…"/></div>
         <button class="btn btn-primary btn-sm" onclick="saveAdText()">Save Ad Text</button>
         <div id="adSaveMsg" style="margin-top:8px;"></div>
       </div>
     </div>
 
-    <!-- PATIENT TABS -->
+    <!-- ── ASSISTANT: OVERVIEW (same as doctor minus settings) ── -->
+
+    <!-- ── PATIENT: BOOK ── -->
     <div class="tab-content" id="tab-book">
-      <div class="doctor-profile-card">
+
+      <!-- Patient sees Doctor + availability -->
+      <div class="patient-hero">
         <div class="doc-photo" id="patDocPhoto"><span>👩‍⚕️</span></div>
         <div>
-          <div class="doc-name">Dr. Janani</div>
-          <div class="doc-spec">Gynaecologist · Available Now</div>
+          <div class="ph-name">Dr. Janani</div>
+          <div class="ph-spec">M.B.B.S, M.D. · Gynaecologist</div>
+          <div class="ph-avail" id="patAvailBadge">Checking availability…</div>
         </div>
       </div>
 
-      <!-- Star Health Ad for patients -->
+      <!-- Token open/closed status -->
+      <div class="token-open-status closed" id="tokenOpenBanner">
+        <div class="tos-dot"></div>
+        <span id="tokenOpenBannerText">Checking token availability…</span>
+      </div>
+
+      <!-- Star Health Ad -->
       <div class="star-health-ad">
         <div class="star-ad-icon">⭐</div>
         <div class="star-ad-body">
           <div class="star-ad-tag">Star Health Insurance</div>
-          <div class="star-ad-title">Health Plans from ₹500/mo</div>
+          <div class="star-ad-title">Women's Health Plans from ₹500/mo</div>
           <div class="star-ad-sub">Maternity cover · New-born benefit · Cashless at 14,000+ hospitals</div>
         </div>
       </div>
 
       <div class="card">
         <h2>Book a Token</h2>
-        <div class="form-row">
-          <label>Select Clinic</label>
-          <select id="bookClinicSelect">
+        <div class="form-row"><label>Select Clinic</label>
+          <select id="bookClinicSelect" onchange="checkClinicTokenOpen()">
             <option value="">-- Choose Clinic --</option>
           </select>
         </div>
-        <div class="form-row">
-          <label>Select Date</label>
-          <input type="date" id="bookDate" min="" />
-        </div>
+        <div class="form-row"><label>Select Date</label><input type="date" id="bookDate" min=""/></div>
         <div class="form-row">
           <label>Session</label>
           <div class="session-picker">
-            <div class="session-opt selected" id="sess-morning" onclick="selectSession('morning')">
-              <span class="s-icon">🌅</span>Morning
-            </div>
-            <div class="session-opt" id="sess-evening" onclick="selectSession('evening')">
-              <span class="s-icon">🌆</span>Evening
-            </div>
+            <div class="session-opt selected" id="sess-morning" onclick="selectSession('morning')"><span class="s-icon">🌅</span>Morning</div>
+            <div class="session-opt" id="sess-evening" onclick="selectSession('evening')"><span class="s-icon">🌆</span>Evening</div>
           </div>
         </div>
-        <div class="form-row">
-          <label>Your Name</label>
-          <input type="text" id="bookName" placeholder="Full name" />
-        </div>
-        <div class="form-row">
-          <label>Phone Number</label>
-          <input type="tel" id="bookPhone" placeholder="10-digit mobile" />
-        </div>
-        <div class="form-row">
-          <label>Reason (optional)</label>
-          <input type="text" id="bookReason" placeholder="Brief reason for visit" />
-        </div>
+        <div class="form-row"><label>Your Name</label><input type="text" id="bookName" placeholder="Full name"/></div>
+        <div class="form-row"><label>Phone Number</label><input type="tel" id="bookPhone" placeholder="10-digit mobile"/></div>
+        <div class="form-row"><label>Reason (optional)</label><input type="text" id="bookReason" placeholder="Brief reason for visit"/></div>
         <div id="bookMsg"></div>
         <button class="btn btn-primary btn-block" onclick="bookToken()">Get Token Number</button>
       </div>
     </div>
 
+    <!-- ── PATIENT: MY TOKEN ── -->
     <div class="tab-content" id="tab-mytoken">
       <div id="myTokenSection">
-        <div class="empty-state">
-          <div class="empty-icon">🎫</div>
-          <div class="empty-text">You have no active token today.<br>Book one from the Book tab!</div>
-        </div>
+        <div class="empty-state"><div class="empty-icon">🎫</div><div class="empty-text">No active token today.<br>Book one from the Book tab!</div></div>
       </div>
     </div>
 
+    <!-- ── PATIENT: HISTORY ── -->
     <div class="tab-content" id="tab-history">
       <div class="section-title">Token History</div>
       <div id="patientHistory"><div class="loading">Loading…</div></div>
     </div>
 
-  </div><!-- end scroll area -->
-</div><!-- end appScreen -->
+  </div>
+</div>
 
 <!-- ═══════════════ MODALS ═══════════════ -->
-<!-- Add Clinic Modal -->
 <div class="modal-overlay" id="addClinicModal">
   <div class="modal">
     <span class="modal-close" onclick="closeModal('addClinicModal')">✕</span>
     <h2>Add New Clinic</h2>
-    <div class="form-row"><label>Clinic Name</label><input type="text" id="nc-name" placeholder="e.g. Anna Nagar Clinic" /></div>
-    <div class="form-row"><label>Location / Address</label><input type="text" id="nc-loc" placeholder="Full address" /></div>
+    <div class="form-row"><label>Clinic Name</label><input type="text" id="nc-name" placeholder="e.g. Anna Nagar Clinic"/></div>
+    <div class="form-row"><label>Location / Address</label><input type="text" id="nc-loc" placeholder="Full address"/></div>
     <div class="form-grid">
-      <div class="form-row"><label>Morning Open Time</label><input type="time" id="nc-mopen" /></div>
-      <div class="form-row"><label>Morning Close Time</label><input type="time" id="nc-mclose" /></div>
+      <div class="form-row"><label>Morning Open</label><input type="time" id="nc-mopen"/></div>
+      <div class="form-row"><label>Morning Close</label><input type="time" id="nc-mclose"/></div>
     </div>
     <div class="form-grid">
-      <div class="form-row"><label>Evening Open Time</label><input type="time" id="nc-eopen" /></div>
-      <div class="form-row"><label>Evening Close Time</label><input type="time" id="nc-eclose" /></div>
+      <div class="form-row"><label>Evening Open</label><input type="time" id="nc-eopen"/></div>
+      <div class="form-row"><label>Evening Close</label><input type="time" id="nc-eclose"/></div>
     </div>
-    <div class="form-row"><label>Max Tokens / Session</label><input type="number" id="nc-max" value="30" /></div>
+    <div class="form-row"><label>Max Tokens / Session</label><input type="number" id="nc-max" value="30"/></div>
     <div id="nc-msg"></div>
     <button class="btn btn-primary btn-block" onclick="saveNewClinic()">Save Clinic</button>
   </div>
 </div>
 
-<!-- Edit Clinic Modal -->
 <div class="modal-overlay" id="editClinicModal">
   <div class="modal">
     <span class="modal-close" onclick="closeModal('editClinicModal')">✕</span>
     <h2>Edit Clinic</h2>
-    <input type="hidden" id="ec-id" />
-    <div class="form-row"><label>Clinic Name</label><input type="text" id="ec-name" /></div>
-    <div class="form-row"><label>Location</label><input type="text" id="ec-loc" /></div>
+    <input type="hidden" id="ec-id"/>
+    <div class="form-row"><label>Clinic Name</label><input type="text" id="ec-name"/></div>
+    <div class="form-row"><label>Location</label><input type="text" id="ec-loc"/></div>
     <div class="form-grid">
-      <div class="form-row"><label>Morning Open</label><input type="time" id="ec-mopen" /></div>
-      <div class="form-row"><label>Morning Close</label><input type="time" id="ec-mclose" /></div>
+      <div class="form-row"><label>Morning Open</label><input type="time" id="ec-mopen"/></div>
+      <div class="form-row"><label>Morning Close</label><input type="time" id="ec-mclose"/></div>
     </div>
     <div class="form-grid">
-      <div class="form-row"><label>Evening Open</label><input type="time" id="ec-eopen" /></div>
-      <div class="form-row"><label>Evening Close</label><input type="time" id="ec-eclose" /></div>
+      <div class="form-row"><label>Evening Open</label><input type="time" id="ec-eopen"/></div>
+      <div class="form-row"><label>Evening Close</label><input type="time" id="ec-eclose"/></div>
     </div>
-    <div class="form-row"><label>Max Tokens / Session</label><input type="number" id="ec-max" /></div>
+    <div class="form-row"><label>Max Tokens / Session</label><input type="number" id="ec-max"/></div>
     <div id="ec-msg"></div>
     <button class="btn btn-primary btn-block" onclick="saveEditClinic()">Update Clinic</button>
   </div>
 </div>
 
-<!-- ═══════════════ POPUP NOTIFICATION ═══════════════ -->
+<!-- POPUP NOTIFICATION -->
 <div id="popupNotif">
   <div class="notif-icon" id="notifIcon">🔔</div>
-  <div>
-    <div class="notif-title" id="notifTitle">Update</div>
-    <div class="notif-body" id="notifBody"></div>
-  </div>
+  <div><div class="notif-title" id="notifTitle">Update</div><div class="notif-body" id="notifBody"></div></div>
   <span class="notif-close" onclick="hideNotif()">✕</span>
 </div>
 
-<!-- ═══════════════ FIREBASE CONFIG ═══════════════ -->
+<!-- ═══════════════ FIREBASE + LOGIC ═══════════════ -->
 <script>
 /* ══════════════════════════════════════════════════
    🔥 FIREBASE CONFIGURATION
-   Replace the config below with YOUR Firebase project config.
-   Go to: Firebase Console → Project Settings → Your Apps → Web App Config
-   ══════════════════════════════════════════════════ */
+══════════════════════════════════════════════════ */
 const firebaseConfig = {
   apiKey: "AIzaSyD8-BsJofqoyLYTXoEwCxpal_wcoFbWYjw",
   authDomain: "token-f9676.firebaseapp.com",
@@ -904,788 +887,614 @@ const firebaseConfig = {
   measurementId: "G-SHG8MRVEQM"
 };
 
-/* ══════════════════════════════════════════════════
-   ADMIN GOOGLE ACCOUNTS
-   Add the Gmail addresses of Doctor and Assistants here.
-   ══════════════════════════════════════════════════ */
-const DOCTOR_EMAILS = ["imman22011995@gmail.com"];       // Replace with actual doctor email
-const ASSISTANT_EMAILS = ["immanuiic@gmail.com"]; // Replace with actual assistant email
+const DOCTOR_EMAILS   = ["imman22011995@gmail.com"];
+const ASSISTANT_EMAILS = ["immanuiic@gmail.com"];
 
-// ── Init Firebase ──
-const app = firebase.initializeApp(firebaseConfig);
+firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
-const db = firebase.database();
-
-// ── State ──
-let currentUser = null;
-let currentRole = null;
-let loginIntentRole = null;
-let selectedSession = 'morning';
-let activeCallTokens = [];
-let notifTimer = null;
-
-// ── TODAY ──
-function today() {
-  return new Date().toISOString().split('T')[0];
-}
-function fmtDate(d) {
-  return new Date(d + 'T00:00:00').toLocaleDateString('en-IN', {day:'numeric',month:'short',year:'numeric'});
-}
-
-// ══════════════════════════════════════════════════
-// AUTH
-// ══════════════════════════════════════════════════
-function signIn(roleIntent) {
-  loginIntentRole = roleIntent;
-  const provider = new firebase.auth.GoogleAuthProvider();
-  auth.signInWithPopup(provider).catch(e => {
-    showNotif('❌', 'Sign In Failed', e.message);
-  });
-}
-
-function logout() {
-  auth.signOut();
-}
-
-auth.onAuthStateChanged(user => {
-  if (user) {
-    currentUser = user;
-    const email = user.email;
-
-    if (DOCTOR_EMAILS.includes(email)) {
-      currentRole = 'doctor';
-    } else if (ASSISTANT_EMAILS.includes(email)) {
-      currentRole = 'assistant';
-    } else {
-      currentRole = 'patient';
-      // If they tried to log in as doctor/assistant but aren't, still allow as patient
-    }
-
-    initApp();
-  } else {
-    currentUser = null;
-    currentRole = null;
-    show('loginScreen');
-    hide('appScreen');
-  }
-});
-
-function initApp() {
-  show('appScreen');
-  hide('loginScreen');
-  // Set header
-  document.getElementById('roleBadge').textContent =
-    currentRole === 'doctor' ? '🩺 Doctor' :
-    currentRole === 'assistant' ? '🩹 Assistant' : '👤 Patient';
-  const av = document.getElementById('userAvatar');
-  if (currentUser.photoURL) {
-    av.innerHTML = `<img src="${currentUser.photoURL}" />`;
-  } else {
-    av.textContent = (currentUser.displayName || 'U')[0].toUpperCase();
-  }
-
-  // Build tabs
-  buildTabs();
-  // Load data
-  loadDoctorPhoto();
-  if (currentRole === 'patient') {
-    loadPatientView();
-  } else {
-    loadAdminView();
-  }
-  // Set today's date defaults
-  document.getElementById('bookDate').value = today();
-  document.getElementById('bookDate').min = today();
-  document.getElementById('tokenDateFilter').value = today();
-
-  // Subscribe to real-time notifications
-  subscribeNotifications();
-}
-
-// ══════════════════════════════════════════════════
-// TABS
-// ══════════════════════════════════════════════════
-const DOCTOR_TABS = [
-  {id:'overview',label:'📋 Overview'},
-  {id:'tokens',label:'🎫 Tokens'},
-  {id:'clinics',label:'🏥 Clinics'},
-  {id:'schedule',label:'📅 Schedule'},
-  {id:'settings',label:'⚙️ Settings'},
-];
-const ASSISTANT_TABS = [
-  {id:'overview',label:'📋 Overview'},
-  {id:'tokens',label:'🎫 Tokens'},
-];
-const PATIENT_TABS = [
-  {id:'book',label:'🎫 Book'},
-  {id:'mytoken',label:'🔢 My Token'},
-  {id:'history',label:'📜 History'},
-];
-
-function buildTabs() {
-  const tabs = currentRole === 'doctor' ? DOCTOR_TABS :
-               currentRole === 'assistant' ? ASSISTANT_TABS : PATIENT_TABS;
-  const bar = document.getElementById('tabsBar');
-  bar.innerHTML = '';
-  tabs.forEach((t, i) => {
-    const btn = document.createElement('button');
-    btn.className = 'tab-btn' + (i===0?' active':'');
-    btn.textContent = t.label;
-    btn.onclick = () => switchTab(t.id);
-    bar.appendChild(btn);
-  });
-  // Activate first tab
-  switchTab(tabs[0].id);
-}
-
-function switchTab(id) {
-  // Hide all tab contents
-  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-  // Show target
-  const tc = document.getElementById('tab-' + id);
-  if (tc) tc.classList.add('active');
-  // Update tab button active state
-  const tabs = currentRole === 'doctor' ? DOCTOR_TABS :
-               currentRole === 'assistant' ? ASSISTANT_TABS : PATIENT_TABS;
-  document.querySelectorAll('.tab-btn').forEach((btn, i) => {
-    btn.classList.toggle('active', tabs[i] && tabs[i].id === id);
-  });
-  // Load tab-specific data
-  if (id === 'tokens') loadAllTokens();
-  if (id === 'clinics') loadManageClinics();
-  if (id === 'schedule') loadHolidays();
-  if (id === 'mytoken') loadMyToken();
-  if (id === 'history') loadPatientHistory();
-  if (id === 'book') loadBookClinics();
-  if (id === 'overview') loadOverview();
-}
-
-// ══════════════════════════════════════════════════
-// DOCTOR PHOTO
-// ══════════════════════════════════════════════════
-function loadDoctorPhoto() {
-  db.ref('settings/doctorPhoto').once('value').then(snap => {
-    const url = snap.val();
-    if (url) {
-      setDoctorPhoto(url);
-    }
-  });
-}
-
-function setDoctorPhoto(url) {
-  ['docPhotoMain','patDocPhoto','settingsPhoto'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.innerHTML = `<img src="${url}" />`;
-  });
-  const hero = document.getElementById('heroPhoto');
-  if (hero) hero.innerHTML = `<img src="${url}" />`;
-}
-
-function uploadPhoto(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    const url = e.target.result; // base64 data URL
-    db.ref('settings/doctorPhoto').set(url).then(() => {
-      setDoctorPhoto(url);
-      document.getElementById('photoMsg').innerHTML = '<div class="alert alert-success">Photo updated!</div>';
-    });
-  };
-  reader.readAsDataURL(file);
-}
-
-// ══════════════════════════════════════════════════
-// OVERVIEW
-// ══════════════════════════════════════════════════
-function loadAdminView() { loadOverview(); }
-
-function loadOverview() {
-  db.ref('clinics').once('value').then(snap => {
-    const clinics = snap.val() || {};
-    const arr = Object.entries(clinics);
-    document.getElementById('docClinicsCount').textContent = `${arr.length} Clinics`;
-
-    // Count today's tokens
-    db.ref('tokens').orderByChild('date').equalTo(today()).once('value').then(ts => {
-      const tokens = ts.val() || {};
-      const tArr = Object.values(tokens);
-      document.getElementById('st-total').textContent = tArr.length;
-      document.getElementById('st-waiting').textContent = tArr.filter(t=>t.status==='waiting').length;
-      document.getElementById('st-done').textContent = tArr.filter(t=>t.status==='done').length;
-    });
-
-    renderClinicCards(arr);
-  });
-}
-
-function renderClinicCards(arr) {
-  const el = document.getElementById('clinicList');
-  if (!arr.length) { el.innerHTML = '<div class="empty-state"><div class="empty-icon">🏥</div><div class="empty-text">No clinics yet. Add one!</div></div>'; return; }
-
-  const now = new Date();
-  const hh = now.getHours()*60 + now.getMinutes();
-
-  el.innerHTML = arr.map(([id, c]) => {
-    // Check if token open
-    const tokenOpen = c.tokenOpen !== false; // default true
-    // Determine session
-    const mOpen = timeToMin(c.morningOpen), mClose = timeToMin(c.morningClose);
-    const eOpen = timeToMin(c.eveningOpen), eClose = timeToMin(c.eveningClose);
-    let session = '';
-    if (hh >= mOpen && hh <= mClose) session = '🌅 Morning Session';
-    else if (hh >= eOpen && hh <= eClose) session = '🌆 Evening Session';
-    else session = '⏰ Outside Hours';
-
-    const isOpen = tokenOpen && (session !== '⏰ Outside Hours');
-    const statusClass = !tokenOpen ? 'closed' : isOpen ? 'open' : 'closed';
-    const statusLabel = !tokenOpen ? 'Tokens Off' : isOpen ? 'Open' : 'Closed';
-
-    return `<div class="clinic-card ${!tokenOpen?'inactive':''}">
-      <div class="clinic-header">
-        <div>
-          <div class="clinic-name">🏥 ${c.name}</div>
-          <div class="clinic-loc">📍 ${c.location}</div>
-        </div>
-        <div class="clinic-status ${statusClass}">${statusLabel}</div>
-      </div>
-      <div class="clinic-info">
-        <div class="clinic-stat"><strong>${c.morningOpen||'-'}</strong>Morning</div>
-        <div class="clinic-stat"><strong>${c.eveningOpen||'-'}</strong>Evening</div>
-        <div class="clinic-stat"><strong>${c.maxTokens||30}</strong>Max/Session</div>
-      </div>
-      ${(currentRole==='doctor'||currentRole==='assistant') ? `
-      <div class="toggle-wrap">
-        <label class="toggle">
-          <input type="checkbox" ${tokenOpen?'checked':''} onchange="toggleClinicTokens('${id}', this.checked)" />
-          <span class="toggle-slider"></span>
-        </label>
-        <span class="toggle-label">Token Booking ${tokenOpen?'Enabled':'Disabled'}</span>
-      </div>` : ''}
-    </div>`;
-  }).join('');
-}
-
-// ══════════════════════════════════════════════════
-// CLINICS MANAGEMENT
-// ══════════════════════════════════════════════════
-function loadManageClinics() {
-  db.ref('clinics').once('value').then(snap => {
-    const clinics = snap.val() || {};
-    const arr = Object.entries(clinics);
-    const el = document.getElementById('manageClinics');
-    if (!arr.length) { el.innerHTML = '<div class="empty-state"><div class="empty-icon">🏥</div><div class="empty-text">No clinics yet.</div></div>'; return; }
-    el.innerHTML = arr.map(([id,c]) => `
-      <div class="clinic-card">
-        <div class="clinic-header">
-          <div>
-            <div class="clinic-name">🏥 ${c.name}</div>
-            <div class="clinic-loc">📍 ${c.location}</div>
-          </div>
-          <div style="display:flex;gap:6px">
-            <button class="btn btn-secondary btn-sm" onclick="openEditClinic('${id}')">Edit</button>
-            <button class="btn btn-sm" style="background:#FFEBEE;color:#C62828" onclick="deleteClinic('${id}','${c.name}')">Delete</button>
-          </div>
-        </div>
-        <div class="clinic-info">
-          <div class="clinic-stat"><strong>${c.morningOpen||'-'} – ${c.morningClose||'-'}</strong>Morning</div>
-          <div class="clinic-stat"><strong>${c.eveningOpen||'-'} – ${c.eveningClose||'-'}</strong>Evening</div>
-          <div class="clinic-stat"><strong>${c.maxTokens||30}</strong>Max Tokens</div>
-        </div>
-      </div>
-    `).join('');
-  });
-}
-
-function openAddClinicModal() { openModal('addClinicModal'); }
-
-function saveNewClinic() {
-  const name = document.getElementById('nc-name').value.trim();
-  const loc = document.getElementById('nc-loc').value.trim();
-  const msgEl = document.getElementById('nc-msg');
-  if (!name || !loc) {
-    msgEl.innerHTML = '<div class="alert alert-error">Clinic name and location are required.</div>';
-    return;
-  }
-  const data = {
-    name, location: loc,
-    morningOpen: document.getElementById('nc-mopen').value || '',
-    morningClose: document.getElementById('nc-mclose').value || '',
-    eveningOpen: document.getElementById('nc-eopen').value || '',
-    eveningClose: document.getElementById('nc-eclose').value || '',
-    maxTokens: parseInt(document.getElementById('nc-max').value) || 30,
-    tokenOpen: true,
-    createdAt: Date.now()
-  };
-  msgEl.innerHTML = '<div class="alert alert-info">Saving…</div>';
-  db.ref('clinics').push(data)
-    .then(() => {
-      // Clear form
-      ['nc-name','nc-loc','nc-mopen','nc-mclose','nc-eopen','nc-eclose'].forEach(id => document.getElementById(id).value = '');
-      document.getElementById('nc-max').value = '30';
-      msgEl.innerHTML = '<div class="alert alert-success">✅ Clinic added successfully!</div>';
-      setTimeout(() => {
-        closeModal('addClinicModal');
-        msgEl.innerHTML = '';
-        loadManageClinics();
-        loadOverview();
-      }, 1000);
-      showNotif('🏥', 'Clinic Added', name + ' has been added.');
-    })
-    .catch(err => {
-      msgEl.innerHTML = `<div class="alert alert-error">❌ Error: ${err.message}. Check Firebase rules.</div>`;
-    });
-}
-
-function openEditClinic(id) {
-  db.ref('clinics/'+id).once('value').then(snap => {
-    const c = snap.val();
-    document.getElementById('ec-id').value = id;
-    document.getElementById('ec-name').value = c.name;
-    document.getElementById('ec-loc').value = c.location;
-    document.getElementById('ec-mopen').value = c.morningOpen||'';
-    document.getElementById('ec-mclose').value = c.morningClose||'';
-    document.getElementById('ec-eopen').value = c.eveningOpen||'';
-    document.getElementById('ec-eclose').value = c.eveningClose||'';
-    document.getElementById('ec-max').value = c.maxTokens||30;
-    openModal('editClinicModal');
-  });
-}
-
-function saveEditClinic() {
-  const id = document.getElementById('ec-id').value;
-  const msgEl = document.getElementById('ec-msg');
-  const data = {
-    name: document.getElementById('ec-name').value.trim(),
-    location: document.getElementById('ec-loc').value.trim(),
-    morningOpen: document.getElementById('ec-mopen').value || '',
-    morningClose: document.getElementById('ec-mclose').value || '',
-    eveningOpen: document.getElementById('ec-eopen').value || '',
-    eveningClose: document.getElementById('ec-eclose').value || '',
-    maxTokens: parseInt(document.getElementById('ec-max').value) || 30,
-  };
-  if (!data.name || !data.location) {
-    msgEl.innerHTML = '<div class="alert alert-error">Name and location are required.</div>';
-    return;
-  }
-  msgEl.innerHTML = '<div class="alert alert-info">Saving…</div>';
-  // Use update (not set) so tokenOpen is preserved
-  db.ref('clinics/' + id).update(data)
-    .then(() => {
-      msgEl.innerHTML = '<div class="alert alert-success">✅ Updated!</div>';
-      setTimeout(() => {
-        closeModal('editClinicModal');
-        msgEl.innerHTML = '';
-        loadManageClinics();
-        loadOverview();
-      }, 800);
-      showNotif('✅', 'Clinic Updated', data.name + ' updated.');
-    })
-    .catch(err => {
-      msgEl.innerHTML = `<div class="alert alert-error">❌ Error: ${err.message}</div>`;
-    });
-}
-
-function deleteClinic(id, name) {
-  if (!confirm(`Delete clinic "${name}"? This cannot be undone.`)) return;
-  db.ref('clinics/'+id).remove().then(() => {
-    loadManageClinics(); loadOverview();
-    showNotif('🗑️','Clinic Deleted', name + ' removed.');
-  });
-}
-
-function toggleClinicTokens(id, enabled) {
-  db.ref('clinics/'+id+'/tokenOpen').set(enabled).then(() => {
-    showNotif(enabled?'✅':'🔴','Token Booking', enabled ? 'Tokens opened for booking.' : 'Token booking closed.');
-    loadOverview();
-  });
-}
-
-// ══════════════════════════════════════════════════
-// ALL TOKENS (Admin view)
-// ══════════════════════════════════════════════════
-function loadAllTokens() {
-  const clinicFilter = document.getElementById('tokenClinicFilter').value;
-  const dateFilter = document.getElementById('tokenDateFilter').value || today();
-
-  // Load clinic filter options
-  db.ref('clinics').once('value').then(snap => {
-    const clinics = snap.val() || {};
-    const sel = document.getElementById('tokenClinicFilter');
-    const curVal = sel.value;
-    sel.innerHTML = '<option value="">All Clinics</option>' +
-      Object.entries(clinics).map(([id,c]) => `<option value="${id}" ${curVal===id?'selected':''}>${c.name}</option>`).join('');
-  });
-
-  let ref = db.ref('tokens').orderByChild('date').equalTo(dateFilter);
-  ref.once('value').then(snap => {
-    let tokens = Object.entries(snap.val()||{});
-    if (clinicFilter) tokens = tokens.filter(([,t]) => t.clinicId === clinicFilter);
-    tokens.sort((a,b) => a[1].tokenNum - b[1].tokenNum);
-
-    const el = document.getElementById('allTokensList');
-    if (!tokens.length) { el.innerHTML = '<div class="empty-state"><div class="empty-icon">🎫</div><div class="empty-text">No tokens for this date.</div></div>'; return; }
-
-    el.innerHTML = tokens.map(([id,t]) => {
-      const numClass = t.status==='waiting'?'waiting':t.status==='called'?'called':t.status==='consulting'?'consulting':'done';
-      const badgeClass = 'status-'+t.status;
-      return `<div class="token-item">
-        <div class="token-num ${numClass}">${t.tokenNum}</div>
-        <div class="token-info">
-          <div class="token-name">${t.patientName||'Unknown'}</div>
-          <div class="token-meta">📱 ${t.phone||'-'} · ${t.clinicName||'Clinic'} · ${t.session==='morning'?'🌅':'🌆'} ${t.session}</div>
-          ${t.reason ? `<div class="token-meta">💬 ${t.reason}</div>` : ''}
-        </div>
-        <div>
-          <span class="token-status-badge ${badgeClass}">${capitalize(t.status)}</span>
-          ${currentRole!=='patient' ? `
-          <div style="display:flex;gap:4px;margin-top:6px;justify-content:flex-end">
-            ${t.status==='waiting'?`<button class="btn btn-sm" style="background:#FFF8E1;color:#F57F17;font-size:11px;padding:4px 8px" onclick="updateTokenStatus('${id}','called')">Call</button>`:''}
-            ${t.status==='called'?`<button class="btn btn-sm" style="background:#EDE7F6;color:#4527A0;font-size:11px;padding:4px 8px" onclick="updateTokenStatus('${id}','consulting')">Consult</button>`:''}
-            ${t.status!=='done'?`<button class="btn btn-sm" style="background:#E8F5E9;color:#1B5E20;font-size:11px;padding:4px 8px" onclick="updateTokenStatus('${id}','done')">Done</button>`:''}
-          </div>` : ''}
-        </div>
-      </div>`;
-    }).join('');
-  });
-}
-
-function updateTokenStatus(id, status) {
-  db.ref('tokens/'+id).update({status, updatedAt: Date.now()}).then(() => {
-    loadAllTokens();
-    const labels = {called:'📣 Patient Called', consulting:'🩺 Consulting Started', done:'✅ Consultation Done'};
-    db.ref('tokens/'+id).once('value').then(snap => {
-      const t = snap.val();
-      // Broadcast notification
-      db.ref('notifications').push({
-        title: labels[status],
-        body: `Token #${t.tokenNum} — ${t.patientName}`,
-        tokenId: id, tokenNum: t.tokenNum, status,
-        clinicId: t.clinicId, timestamp: Date.now()
-      });
-    });
-  });
-}
-
-function callTokens() {
-  const raw = document.getElementById('callTokenInput').value.trim();
-  if (!raw) return;
-  // Parse: "5" or "3,5,7" or "3-7"
-  let nums = [];
-  if (raw.includes('-')) {
-    const [a,b] = raw.split('-').map(Number);
-    for (let i=a;i<=b;i++) nums.push(i);
-  } else {
-    nums = raw.split(',').map(s=>parseInt(s.trim())).filter(n=>!isNaN(n));
-  }
-  activeCallTokens = nums;
-  // Find matching tokens and call them
-  const dateFilter = document.getElementById('tokenDateFilter').value || today();
-  db.ref('tokens').orderByChild('date').equalTo(dateFilter).once('value').then(snap => {
-    const updates = {};
-    Object.entries(snap.val()||{}).forEach(([id,t]) => {
-      if (nums.includes(t.tokenNum)) {
-        updates['tokens/'+id+'/status'] = 'called';
-        updates['tokens/'+id+'/updatedAt'] = Date.now();
-      }
-    });
-    if (Object.keys(updates).length) {
-      db.ref().update(updates).then(() => {
-        loadAllTokens();
-        db.ref('notifications').push({
-          title: '📣 Tokens Called',
-          body: `Tokens ${raw} have been called. Please come in.`,
-          timestamp: Date.now()
-        });
-        document.getElementById('callTokenInput').value = '';
-      });
-    }
-  });
-}
-
-function markConsulting() {
-  const dateFilter = document.getElementById('tokenDateFilter').value || today();
-  db.ref('tokens').orderByChild('date').equalTo(dateFilter).once('value').then(snap => {
-    const updates = {};
-    Object.entries(snap.val()||{}).forEach(([id,t]) => {
-      if (t.status==='called') {
-        updates['tokens/'+id+'/status'] = 'consulting';
-        updates['tokens/'+id+'/updatedAt'] = Date.now();
-      }
-    });
-    db.ref().update(updates).then(()=>loadAllTokens());
-  });
-}
-
-function markDone() {
-  const dateFilter = document.getElementById('tokenDateFilter').value || today();
-  db.ref('tokens').orderByChild('date').equalTo(dateFilter).once('value').then(snap => {
-    const updates = {};
-    Object.entries(snap.val()||{}).forEach(([id,t]) => {
-      if (t.status==='consulting') {
-        updates['tokens/'+id+'/status'] = 'done';
-        updates['tokens/'+id+'/updatedAt'] = Date.now();
-      }
-    });
-    db.ref().update(updates).then(()=>loadAllTokens());
-  });
-}
-
-// ══════════════════════════════════════════════════
-// HOLIDAYS
-// ══════════════════════════════════════════════════
-function loadHolidays() {
-  db.ref('holidays').once('value').then(snap => {
-    const holidays = snap.val() || {};
-    const el = document.getElementById('holidayChips');
-    const arr = Object.entries(holidays).sort((a,b)=>a[1].date.localeCompare(b[1].date));
-    if (!arr.length) { el.innerHTML = '<div class="empty-state" style="padding:20px 0"><div class="empty-text">No holidays set.</div></div>'; return; }
-    el.innerHTML = arr.map(([id,h]) =>
-      `<span class="holiday-chip">📅 ${fmtDate(h.date)}${h.label?' · '+h.label:''}<span class="rm" onclick="removeHoliday('${id}')"> ✕</span></span>`
-    ).join('');
-  });
-}
-
-function addHoliday() {
-  const date = document.getElementById('holidayDateIn').value;
-  if (!date) return;
-  const label = document.getElementById('holidayLabelIn').value.trim();
-  db.ref('holidays').push({date, label, addedAt:Date.now()}).then(()=>{
-    loadHolidays();
-    document.getElementById('holidayDateIn').value = '';
-    document.getElementById('holidayLabelIn').value = '';
-    showNotif('📅','Holiday Added', fmtDate(date)+' blocked.');
-  });
-}
-
-function removeHoliday(id) {
-  db.ref('holidays/'+id).remove().then(()=>loadHolidays());
-}
-
-// ══════════════════════════════════════════════════
-// PATIENT: BOOK TOKEN
-// ══════════════════════════════════════════════════
-function loadPatientView() { loadBookClinics(); }
-
-function loadBookClinics() {
-  db.ref('clinics').once('value').then(snap => {
-    const clinics = snap.val() || {};
-    const sel = document.getElementById('bookClinicSelect');
-    const openClinics = Object.entries(clinics).filter(([,c]) => c.tokenOpen !== false);
-    sel.innerHTML = '<option value="">-- Choose Clinic --</option>' +
-      openClinics.map(([id,c]) => `<option value="${id}">${c.name} — ${c.location}</option>`).join('');
-  });
-}
-
-function selectSession(s) {
-  selectedSession = s;
-  document.getElementById('sess-morning').classList.toggle('selected', s==='morning');
-  document.getElementById('sess-evening').classList.toggle('selected', s==='evening');
-}
-
-async function bookToken() {
-  const clinicId = document.getElementById('bookClinicSelect').value;
-  const date = document.getElementById('bookDate').value;
-  const name = document.getElementById('bookName').value.trim();
-  const phone = document.getElementById('bookPhone').value.trim();
-  const reason = document.getElementById('bookReason').value.trim();
-  const msg = document.getElementById('bookMsg');
-
-  if (!clinicId || !date || !name) {
-    msg.innerHTML = '<div class="alert alert-error">Please fill all required fields.</div>'; return;
-  }
-
-  // Check holiday
-  const holSnap = await db.ref('holidays').orderByChild('date').equalTo(date).once('value');
-  if (holSnap.val()) {
-    msg.innerHTML = '<div class="alert alert-error">🚫 This date is a holiday. Please choose another date.</div>'; return;
-  }
-
-  // Check if past date
-  if (date < today()) {
-    msg.innerHTML = '<div class="alert alert-error">Cannot book for past dates.</div>'; return;
-  }
-
-  // Get clinic
-  const clinicSnap = await db.ref('clinics/'+clinicId).once('value');
-  const clinic = clinicSnap.val();
-  if (!clinic.tokenOpen) {
-    msg.innerHTML = '<div class="alert alert-error">Token booking is currently closed for this clinic.</div>'; return;
-  }
-
-  // Count existing tokens for this clinic/date/session
-  const existSnap = await db.ref('tokens')
-    .orderByChild('clinicDateSession')
-    .equalTo(clinicId+'_'+date+'_'+selectedSession)
-    .once('value');
-  const existing = existSnap.val() || {};
-  const count = Object.keys(existing).length;
-  if (count >= (clinic.maxTokens||30)) {
-    msg.innerHTML = '<div class="alert alert-error">Token limit reached for this session.</div>'; return;
-  }
-
-  const tokenNum = count + 1;
-
-  // Check duplicate (same user same clinic same date)
-  const userTokens = Object.values(existing).filter(t => t.userId === currentUser.uid);
-  if (userTokens.length) {
-    msg.innerHTML = `<div class="alert alert-info">You already have Token #${userTokens[0].tokenNum} for this session.</div>`;
-    return;
-  }
-
-  // Save token
-  await db.ref('tokens').push({
-    clinicId, clinicName: clinic.name,
-    date, session: selectedSession,
-    clinicDateSession: clinicId+'_'+date+'_'+selectedSession,
-    tokenNum,
-    patientName: name, phone, reason,
-    userId: currentUser.uid,
-    userEmail: currentUser.email,
-    status: 'waiting',
-    bookedAt: Date.now()
-  });
-
-  msg.innerHTML = `<div class="alert alert-success">🎉 Token #${tokenNum} booked successfully for ${clinic.name}!</div>`;
-  setTimeout(() => { msg.innerHTML = ''; switchTab('mytoken'); }, 2000);
-}
-
-// ══════════════════════════════════════════════════
-// PATIENT: MY TOKEN
-// ══════════════════════════════════════════════════
-function loadMyToken() {
-  const el = document.getElementById('myTokenSection');
-  el.innerHTML = '<div class="loading">Loading your token…</div>';
-
-  db.ref('tokens').orderByChild('userId').equalTo(currentUser.uid).once('value').then(snap => {
-    const tokens = Object.values(snap.val()||{}).filter(t => t.date === today());
-    if (!tokens.length) {
-      el.innerHTML = `<div class="empty-state"><div class="empty-icon">🎫</div><div class="empty-text">No token for today.<br>Book from the <strong>Book</strong> tab!</div></div>`;
-      return;
-    }
-    tokens.sort((a,b)=>a.tokenNum-b.tokenNum);
-    el.innerHTML = tokens.map(t => {
-      const statusColor = {waiting:'#00796B',called:'#F57F17',consulting:'#4527A0',done:'#1B5E20'}[t.status]||'#00796B';
-      const statusMsg = {
-        waiting: `⏳ Please wait. Your turn is coming.`,
-        called: `📣 Your token is called! Please come in.`,
-        consulting: `🩺 Consultation in progress.`,
-        done: `✅ Consultation completed. Thank you!`
-      }[t.status]||'';
-      // Count tokens ahead
-      return `
-      <div class="my-token-display">
-        <div style="font-size:13px;color:var(--text3);margin-bottom:4px;">${t.clinicName}</div>
-        <div class="big-token-num">${t.tokenNum}</div>
-        <div class="big-token-label">Your Token Number</div>
-        <div class="token-queue-info">${t.session==='morning'?'🌅':'🌆'} ${capitalize(t.session)} · ${fmtDate(t.date)}</div>
-      </div>
-      <div class="card" style="text-align:center;padding:16px">
-        <div style="font-size:22px;margin-bottom:8px">${{waiting:'⏳',called:'📣',consulting:'🩺',done:'✅'}[t.status]}</div>
-        <div style="font-size:16px;font-weight:600;color:${statusColor}">${capitalize(t.status)}</div>
-        <div style="font-size:13px;color:var(--text2);margin-top:6px">${statusMsg}</div>
-      </div>`;
-    }).join('');
-
-    // Real-time listen for updates
-    db.ref('tokens').orderByChild('userId').equalTo(currentUser.uid)
-      .on('child_changed', snap => {
-        const t = snap.val();
-        if (t.date === today()) {
-          const msgs = {
-            called: `📣 Token #${t.tokenNum} is called!`,
-            consulting: `🩺 Your consultation has started.`,
-            done: `✅ Your consultation is complete.`
-          };
-          if (msgs[t.status]) showNotif('🔔','Your Token', msgs[t.status]);
-          loadMyToken();
-        }
-      });
-  });
-}
-
-// ══════════════════════════════════════════════════
-// PATIENT: HISTORY
-// ══════════════════════════════════════════════════
-function loadPatientHistory() {
-  db.ref('tokens').orderByChild('userId').equalTo(currentUser.uid).once('value').then(snap => {
-    const tokens = Object.values(snap.val()||{})
-      .sort((a,b)=>b.bookedAt-a.bookedAt);
-    const el = document.getElementById('patientHistory');
-    if (!tokens.length) { el.innerHTML = '<div class="empty-state"><div class="empty-icon">📜</div><div class="empty-text">No past tokens.</div></div>'; return; }
-    el.innerHTML = tokens.map(t => `
-      <div class="history-item">
-        <div class="h-date">${fmtDate(t.date)} · ${t.session==='morning'?'🌅':'🌆'} ${capitalize(t.session)}</div>
-        <div class="h-clinic">🏥 ${t.clinicName}</div>
-        <div class="h-token">Token #${t.tokenNum} · <span class="token-status-badge status-${t.status}">${capitalize(t.status)}</span></div>
-        ${t.reason ? `<div class="h-date" style="margin-top:4px">💬 ${t.reason}</div>` : ''}
-      </div>
-    `).join('');
-  });
-}
-
-// ══════════════════════════════════════════════════
-// NOTIFICATIONS (Real-time popup)
-// ══════════════════════════════════════════════════
-function subscribeNotifications() {
-  // Listen for new notifications in the last 5 seconds
-  const cutoff = Date.now() - 2000;
-  db.ref('notifications').orderByChild('timestamp').startAt(cutoff)
-    .on('child_added', snap => {
-      const n = snap.val();
-      if (!n) return;
-      // Patients only see their own token updates (handled in loadMyToken)
-      // Admin/assistant see all
-      if (currentRole === 'doctor' || currentRole === 'assistant') {
-        showNotif('🔔', n.title||'Update', n.body||'');
-      }
-    });
-}
-
-function showNotif(icon, title, body) {
-  document.getElementById('notifIcon').textContent = icon;
-  document.getElementById('notifTitle').textContent = title;
-  document.getElementById('notifBody').textContent = body;
-  const el = document.getElementById('popupNotif');
-  el.classList.add('show');
-  if (notifTimer) clearTimeout(notifTimer);
-  notifTimer = setTimeout(hideNotif, 5000);
-}
-
-function hideNotif() {
-  document.getElementById('popupNotif').classList.remove('show');
-}
-
-// ══════════════════════════════════════════════════
-// AD TEXT
-// ══════════════════════════════════════════════════
-function saveAdText() {
-  const txt = document.getElementById('adTextInput').value.trim();
-  db.ref('settings/adText').set(txt).then(() => {
-    document.getElementById('adSaveMsg').innerHTML = '<div class="alert alert-success">Ad text saved!</div>';
-    setTimeout(()=>document.getElementById('adSaveMsg').innerHTML='', 2000);
-  });
-}
-
-// ══════════════════════════════════════════════════
-// UTILS
-// ══════════════════════════════════════════════════
-function timeToMin(t) {
-  if (!t) return 0;
-  const [h,m] = t.split(':').map(Number);
-  return h*60+m;
-}
-function capitalize(s) { return s ? s[0].toUpperCase()+s.slice(1) : ''; }
+const db   = firebase.database();
+
+let currentUser = null, currentRole = null;
+let loginIntentRole = null, selectedSession = 'morning';
+let activeCallTokens = [], notifTimer = null;
+
+function today() { return new Date().toISOString().split('T')[0]; }
+function fmtDate(d) { return new Date(d+'T00:00:00').toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}); }
+function timeToMin(t) { if(!t)return 0; const[h,m]=t.split(':').map(Number); return h*60+m; }
+function capitalize(s) { return s?s[0].toUpperCase()+s.slice(1):''; }
 function show(id) { document.getElementById(id).classList.add('active'); }
 function hide(id) { document.getElementById(id).classList.remove('active'); }
 function openModal(id) { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 
-// Close modals when clicking overlay background (event delegation)
-document.addEventListener('click', e => {
-  if (e.target && e.target.classList.contains('modal-overlay')) {
-    e.target.classList.remove('open');
+/* ── CLINIC OPEN CHECK ── */
+function isClinicOpenNow(clinic) {
+  if (!clinic) return false;
+  if (clinic.tokenOpen === false) return false; // manual override
+  const now = new Date();
+  const hh = now.getHours()*60 + now.getMinutes();
+  const mO = timeToMin(clinic.morningOpen), mC = timeToMin(clinic.morningClose);
+  const eO = timeToMin(clinic.eveningOpen), eC = timeToMin(clinic.eveningClose);
+  return (mO && mC && hh >= mO && hh <= mC) || (eO && eC && hh >= eO && hh <= eC);
+}
+
+/* ── LOGIN SCREEN: load first available clinic timing ── */
+db.ref('clinics').limitToFirst(1).once('value').then(snap => {
+  const clinics = snap.val();
+  if (!clinics) return;
+  const c = Object.values(clinics)[0];
+  if (c.morningOpen && c.morningClose)
+    document.getElementById('loginMorningTime').textContent = fmt12(c.morningOpen)+' – '+fmt12(c.morningClose);
+  if (c.eveningOpen && c.eveningClose)
+    document.getElementById('loginEveningTime').textContent = fmt12(c.eveningOpen)+' – '+fmt12(c.eveningClose);
+  const isOpen = isClinicOpenNow(c);
+  document.getElementById('heroTokenStatus').textContent = isOpen ? '🟢' : '🔴';
+  document.getElementById('heroTokenText').textContent = isOpen ? 'Tokens Open' : 'Tokens Closed';
+});
+
+function fmt12(t){
+  if(!t)return'--';
+  const[h,m]=t.split(':').map(Number);
+  const ap=h>=12?'PM':'AM';
+  const h12=h%12||12;
+  return `${h12}:${String(m).padStart(2,'0')} ${ap}`;
+}
+
+/* ══════════════════════════════════════════════════
+   AUTH
+══════════════════════════════════════════════════ */
+function signIn(roleIntent) {
+  loginIntentRole = roleIntent;
+  auth.signInWithPopup(new firebase.auth.GoogleAuthProvider())
+    .catch(e => showNotif('❌','Sign In Failed',e.message));
+}
+function logout() { auth.signOut(); }
+
+auth.onAuthStateChanged(user => {
+  if (user) {
+    currentUser = user;
+    currentRole = DOCTOR_EMAILS.includes(user.email) ? 'doctor'
+                : ASSISTANT_EMAILS.includes(user.email) ? 'assistant' : 'patient';
+    initApp();
+  } else {
+    currentUser = null; currentRole = null;
+    show('loginScreen'); hide('appScreen');
   }
+});
+
+function initApp() {
+  show('appScreen'); hide('loginScreen');
+  document.getElementById('roleBadge').textContent =
+    currentRole==='doctor'?'🩺 Doctor':currentRole==='assistant'?'🩹 Assistant':'👤 Patient';
+  const av = document.getElementById('userAvatar');
+  if (currentUser.photoURL) av.innerHTML=`<img src="${currentUser.photoURL}"/>`;
+  else av.textContent=(currentUser.displayName||'U')[0].toUpperCase();
+  buildTabs();
+  loadDoctorPhoto();
+  if (currentRole==='patient') loadPatientView();
+  else loadAdminView();
+  document.getElementById('bookDate').value = today();
+  document.getElementById('bookDate').min = today();
+  document.getElementById('tokenDateFilter').value = today();
+  subscribeNotifications();
+}
+
+/* ══════════════════════════════════════════════════
+   TABS
+══════════════════════════════════════════════════ */
+const DOCTOR_TABS    = [{id:'overview',label:'📋 Overview'},{id:'tokens',label:'🎫 Tokens'},{id:'clinics',label:'🏥 Clinics'},{id:'schedule',label:'⏰ Schedule'},{id:'settings',label:'⚙️ Settings'}];
+const ASSISTANT_TABS = [{id:'overview',label:'📋 Overview'},{id:'tokens',label:'🎫 Tokens'}];
+const PATIENT_TABS   = [{id:'book',label:'🎫 Book'},{id:'mytoken',label:'🔢 My Token'},{id:'history',label:'📜 History'}];
+
+function buildTabs() {
+  const tabs = currentRole==='doctor'?DOCTOR_TABS:currentRole==='assistant'?ASSISTANT_TABS:PATIENT_TABS;
+  const bar = document.getElementById('tabsBar');
+  bar.innerHTML = '';
+  tabs.forEach((t,i) => {
+    const btn = document.createElement('button');
+    btn.className='tab-btn'+(i===0?' active':'');
+    btn.textContent=t.label;
+    btn.onclick=()=>switchTab(t.id);
+    bar.appendChild(btn);
+  });
+  switchTab(tabs[0].id);
+}
+
+function switchTab(id) {
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  const tc = document.getElementById('tab-'+id);
+  if(tc) tc.classList.add('active');
+  const tabs = currentRole==='doctor'?DOCTOR_TABS:currentRole==='assistant'?ASSISTANT_TABS:PATIENT_TABS;
+  document.querySelectorAll('.tab-btn').forEach((btn,i)=>btn.classList.toggle('active',tabs[i]&&tabs[i].id===id));
+  if(id==='tokens') loadAllTokens();
+  if(id==='clinics') loadManageClinics();
+  if(id==='schedule') { loadHolidays(); loadScheduleClinicSelect(); }
+  if(id==='mytoken') loadMyToken();
+  if(id==='history') loadPatientHistory();
+  if(id==='book') loadBookClinics();
+  if(id==='overview') loadOverview();
+}
+
+/* ══════════════════════════════════════════════════
+   DOCTOR PHOTO
+══════════════════════════════════════════════════ */
+function loadDoctorPhoto() {
+  db.ref('settings/doctorPhoto').once('value').then(snap=>{
+    if(snap.val()) setDoctorPhoto(snap.val());
+  });
+}
+function setDoctorPhoto(url) {
+  ['docPhotoMain','patDocPhoto','settingsPhoto'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.innerHTML=`<img src="${url}"/>`;
+  });
+  ['heroPhoto','hdrPhoto'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.innerHTML=`<img src="${url}" style="width:100%;height:100%;object-fit:cover;object-position:top;border-radius:inherit;"/>`;
+  });
+}
+function uploadPhoto(event) {
+  const file=event.target.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    db.ref('settings/doctorPhoto').set(e.target.result).then(()=>{
+      setDoctorPhoto(e.target.result);
+      document.getElementById('photoMsg').innerHTML='<div class="alert alert-success">Photo updated!</div>';
+    });
+  };
+  reader.readAsDataURL(file);
+}
+
+/* ══════════════════════════════════════════════════
+   OVERVIEW
+══════════════════════════════════════════════════ */
+function loadAdminView() { loadOverview(); }
+function loadOverview() {
+  db.ref('clinics').once('value').then(snap=>{
+    const clinics=snap.val()||{};
+    const arr=Object.entries(clinics);
+    document.getElementById('docClinicsCount').textContent=`${arr.length} Clinic${arr.length!==1?'s':''}`;
+    db.ref('tokens').orderByChild('date').equalTo(today()).once('value').then(ts=>{
+      const tArr=Object.values(ts.val()||{});
+      document.getElementById('st-total').textContent=tArr.length;
+      document.getElementById('st-waiting').textContent=tArr.filter(t=>t.status==='waiting').length;
+      document.getElementById('st-done').textContent=tArr.filter(t=>t.status==='done').length;
+    });
+    renderClinicCards(arr);
+  });
+}
+
+function renderClinicCards(arr) {
+  const el=document.getElementById('clinicList');
+  if(!arr.length){el.innerHTML='<div class="empty-state"><div class="empty-icon">🏥</div><div class="empty-text">No clinics yet. Add one!</div></div>';return;}
+  el.innerHTML=arr.map(([id,c])=>{
+    const isOpen=isClinicOpenNow(c);
+    const manualOff=c.tokenOpen===false;
+    const statusClass=manualOff?'closed':isOpen?'open':'closed';
+    const statusLabel=manualOff?'Tokens Off':isOpen?'Open Now':'Closed';
+    const session = (()=>{
+      const hh=new Date().getHours()*60+new Date().getMinutes();
+      if(c.morningOpen&&c.morningClose&&hh>=timeToMin(c.morningOpen)&&hh<=timeToMin(c.morningClose)) return '🌅 Morning';
+      if(c.eveningOpen&&c.eveningClose&&hh>=timeToMin(c.eveningOpen)&&hh<=timeToMin(c.eveningClose)) return '🌆 Evening';
+      return '⏰ Outside Hours';
+    })();
+    return `<div class="clinic-card ${manualOff?'inactive':''}">
+      <div class="clinic-header">
+        <div>
+          <div class="clinic-name-text">🏥 ${c.name}</div>
+          <div class="clinic-loc">📍 ${c.location} · ${session}</div>
+        </div>
+        <div class="clinic-status ${statusClass}">${statusLabel}</div>
+      </div>
+      <div class="clinic-info-row">
+        <div class="clinic-stat"><strong>${c.morningOpen?fmt12(c.morningOpen)+' – '+fmt12(c.morningClose):'-'}</strong>Morning</div>
+        <div class="clinic-stat"><strong>${c.eveningOpen?fmt12(c.eveningOpen)+' – '+fmt12(c.eveningClose):'-'}</strong>Evening</div>
+        <div class="clinic-stat"><strong>${c.maxTokens||30}</strong>Max/Session</div>
+      </div>
+      ${(currentRole==='doctor'||currentRole==='assistant')?`
+      <div class="toggle-wrap">
+        <label class="toggle"><input type="checkbox" ${c.tokenOpen!==false?'checked':''} onchange="toggleClinicTokens('${id}',this.checked)"/><span class="toggle-slider"></span></label>
+        <span class="toggle-label">Token Booking ${c.tokenOpen!==false?'Enabled':'Disabled'}</span>
+      </div>`:''}
+    </div>`;
+  }).join('');
+}
+
+/* ══════════════════════════════════════════════════
+   CLINICS MANAGEMENT
+══════════════════════════════════════════════════ */
+function loadManageClinics() {
+  db.ref('clinics').once('value').then(snap=>{
+    const clinics=snap.val()||{};
+    const arr=Object.entries(clinics);
+    const el=document.getElementById('manageClinics');
+    if(!arr.length){el.innerHTML='<div class="empty-state"><div class="empty-icon">🏥</div><div class="empty-text">No clinics yet.</div></div>';return;}
+    el.innerHTML=arr.map(([id,c])=>`
+      <div class="clinic-card">
+        <div class="clinic-header">
+          <div><div class="clinic-name-text">🏥 ${c.name}</div><div class="clinic-loc">📍 ${c.location}</div></div>
+          <div style="display:flex;gap:6px;">
+            <button class="btn btn-secondary btn-sm" onclick="openEditClinic('${id}')">Edit</button>
+            <button class="btn btn-sm" style="background:#FFEBEE;color:#C62828;" onclick="deleteClinic('${id}','${c.name}')">Delete</button>
+          </div>
+        </div>
+        <div class="clinic-info-row">
+          <div class="clinic-stat"><strong>${c.morningOpen?fmt12(c.morningOpen)+' – '+fmt12(c.morningClose):'-'}</strong>Morning</div>
+          <div class="clinic-stat"><strong>${c.eveningOpen?fmt12(c.eveningOpen)+' – '+fmt12(c.eveningClose):'-'}</strong>Evening</div>
+          <div class="clinic-stat"><strong>${c.maxTokens||30}</strong>Max Tokens</div>
+        </div>
+      </div>`).join('');
+  });
+}
+
+function openAddClinicModal(){openModal('addClinicModal');}
+function saveNewClinic(){
+  const name=document.getElementById('nc-name').value.trim();
+  const loc=document.getElementById('nc-loc').value.trim();
+  const msg=document.getElementById('nc-msg');
+  if(!name||!loc){msg.innerHTML='<div class="alert alert-error">Name and location required.</div>';return;}
+  const data={name,location:loc,morningOpen:document.getElementById('nc-mopen').value||'',morningClose:document.getElementById('nc-mclose').value||'',eveningOpen:document.getElementById('nc-eopen').value||'',eveningClose:document.getElementById('nc-eclose').value||'',maxTokens:parseInt(document.getElementById('nc-max').value)||30,tokenOpen:true,createdAt:Date.now()};
+  msg.innerHTML='<div class="alert alert-info">Saving…</div>';
+  db.ref('clinics').push(data).then(()=>{
+    ['nc-name','nc-loc','nc-mopen','nc-mclose','nc-eopen','nc-eclose'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('nc-max').value='30';
+    msg.innerHTML='<div class="alert alert-success">✅ Clinic added!</div>';
+    setTimeout(()=>{closeModal('addClinicModal');msg.innerHTML='';loadManageClinics();loadOverview();},1000);
+    showNotif('🏥','Clinic Added',name+' added.');
+  }).catch(e=>msg.innerHTML=`<div class="alert alert-error">❌ ${e.message}</div>`);
+}
+function openEditClinic(id){
+  db.ref('clinics/'+id).once('value').then(snap=>{
+    const c=snap.val();
+    document.getElementById('ec-id').value=id;
+    document.getElementById('ec-name').value=c.name;
+    document.getElementById('ec-loc').value=c.location;
+    document.getElementById('ec-mopen').value=c.morningOpen||'';
+    document.getElementById('ec-mclose').value=c.morningClose||'';
+    document.getElementById('ec-eopen').value=c.eveningOpen||'';
+    document.getElementById('ec-eclose').value=c.eveningClose||'';
+    document.getElementById('ec-max').value=c.maxTokens||30;
+    openModal('editClinicModal');
+  });
+}
+function saveEditClinic(){
+  const id=document.getElementById('ec-id').value;
+  const msg=document.getElementById('ec-msg');
+  const data={name:document.getElementById('ec-name').value.trim(),location:document.getElementById('ec-loc').value.trim(),morningOpen:document.getElementById('ec-mopen').value||'',morningClose:document.getElementById('ec-mclose').value||'',eveningOpen:document.getElementById('ec-eopen').value||'',eveningClose:document.getElementById('ec-eclose').value||'',maxTokens:parseInt(document.getElementById('ec-max').value)||30};
+  if(!data.name||!data.location){msg.innerHTML='<div class="alert alert-error">Name and location required.</div>';return;}
+  msg.innerHTML='<div class="alert alert-info">Saving…</div>';
+  db.ref('clinics/'+id).update(data).then(()=>{
+    msg.innerHTML='<div class="alert alert-success">✅ Updated!</div>';
+    setTimeout(()=>{closeModal('editClinicModal');msg.innerHTML='';loadManageClinics();loadOverview();},800);
+    showNotif('✅','Clinic Updated',data.name+' updated.');
+  }).catch(e=>msg.innerHTML=`<div class="alert alert-error">❌ ${e.message}</div>`);
+}
+function deleteClinic(id,name){
+  if(!confirm(`Delete clinic "${name}"?`))return;
+  db.ref('clinics/'+id).remove().then(()=>{loadManageClinics();loadOverview();showNotif('🗑️','Clinic Deleted',name+' removed.');});
+}
+function toggleClinicTokens(id,enabled){
+  db.ref('clinics/'+id+'/tokenOpen').set(enabled).then(()=>{
+    showNotif(enabled?'✅':'🔴','Token Booking',enabled?'Tokens opened.':'Booking closed.');
+    loadOverview();
+  });
+}
+
+/* ══════════════════════════════════════════════════
+   SCHEDULE – TOKEN TIME CONTROL
+══════════════════════════════════════════════════ */
+function loadScheduleClinicSelect(){
+  db.ref('clinics').once('value').then(snap=>{
+    const clinics=snap.val()||{};
+    const sel=document.getElementById('timeControlClinicSel');
+    sel.innerHTML='<option value="">-- Select Clinic --</option>'+
+      Object.entries(clinics).map(([id,c])=>`<option value="${id}">${c.name}</option>`).join('');
+  });
+}
+function loadClinicTimeControl(){
+  const id=document.getElementById('timeControlClinicSel').value;
+  const area=document.getElementById('timeControlArea');
+  if(!id){area.style.display='none';return;}
+  db.ref('clinics/'+id).once('value').then(snap=>{
+    const c=snap.val();
+    document.getElementById('tc-mopen').value=c.morningOpen||'';
+    document.getElementById('tc-mclose').value=c.morningClose||'';
+    document.getElementById('tc-eopen').value=c.eveningOpen||'';
+    document.getElementById('tc-eclose').value=c.eveningClose||'';
+    document.getElementById('tc-tokenOpen').checked=c.tokenOpen!==false;
+    area.style.display='block';
+  });
+}
+function saveClinicTimeControl(){
+  const id=document.getElementById('timeControlClinicSel').value;
+  if(!id)return;
+  const data={
+    morningOpen:document.getElementById('tc-mopen').value||'',
+    morningClose:document.getElementById('tc-mclose').value||'',
+    eveningOpen:document.getElementById('tc-eopen').value||'',
+    eveningClose:document.getElementById('tc-eclose').value||'',
+    tokenOpen:document.getElementById('tc-tokenOpen').checked
+  };
+  db.ref('clinics/'+id).update(data).then(()=>{
+    const msg=document.getElementById('tcSaveMsg');
+    msg.textContent='✅ Saved!';
+    setTimeout(()=>msg.textContent='',2500);
+    showNotif('⏰','Time Control','Clinic hours updated.');
+    loadOverview();
+  });
+}
+
+/* ══════════════════════════════════════════════════
+   HOLIDAYS
+══════════════════════════════════════════════════ */
+function loadHolidays(){
+  db.ref('holidays').once('value').then(snap=>{
+    const h=snap.val()||{};
+    const el=document.getElementById('holidayChips');
+    if(!Object.keys(h).length){el.innerHTML='<div style="font-size:13px;color:var(--text3);">No holidays added yet.</div>';return;}
+    el.innerHTML=Object.entries(h).map(([id,v])=>
+      `<span class="holiday-chip">📅 ${fmtDate(v.date)} ${v.label?'· '+v.label:''}<span class="chip-del" onclick="delHoliday('${id}')">✕</span></span>`
+    ).join('');
+  });
+}
+function addHoliday(){
+  const date=document.getElementById('holidayDateIn').value;
+  const label=document.getElementById('holidayLabelIn').value.trim();
+  if(!date)return;
+  db.ref('holidays').push({date,label}).then(()=>{
+    document.getElementById('holidayDateIn').value='';
+    document.getElementById('holidayLabelIn').value='';
+    loadHolidays();
+    showNotif('📅','Holiday Added',fmtDate(date)+' blocked.');
+  });
+}
+function delHoliday(id){db.ref('holidays/'+id).remove().then(loadHolidays);}
+
+/* ══════════════════════════════════════════════════
+   ALL TOKENS
+══════════════════════════════════════════════════ */
+function loadAllTokens(){
+  const clinicFilter=document.getElementById('tokenClinicFilter').value;
+  const dateFilter=document.getElementById('tokenDateFilter').value||today();
+  db.ref('clinics').once('value').then(snap=>{
+    const clinics=snap.val()||{};
+    const sel=document.getElementById('tokenClinicFilter');
+    const cur=sel.value;
+    sel.innerHTML='<option value="">All Clinics</option>'+Object.entries(clinics).map(([id,c])=>`<option value="${id}" ${cur===id?'selected':''}>${c.name}</option>`).join('');
+  });
+  db.ref('tokens').orderByChild('date').equalTo(dateFilter).once('value').then(snap=>{
+    let tokens=Object.entries(snap.val()||{});
+    if(clinicFilter) tokens=tokens.filter(([,t])=>t.clinicId===clinicFilter);
+    tokens.sort((a,b)=>a[1].tokenNum-b[1].tokenNum);
+    const el=document.getElementById('allTokensList');
+    if(!tokens.length){el.innerHTML='<div class="empty-state"><div class="empty-icon">🎫</div><div class="empty-text">No tokens for this date.</div></div>';return;}
+    el.innerHTML=tokens.map(([id,t])=>`
+      <div class="token-item">
+        <div class="token-num-circle ${t.status}">${t.tokenNum}</div>
+        <div class="token-info">
+          <div class="token-name">${t.patientName||'Unknown'}</div>
+          <div class="token-meta">📱 ${t.phone||'-'} · ${t.clinicName||'Clinic'} · ${t.session==='morning'?'🌅':'🌆'} ${t.session}</div>
+          ${t.reason?`<div class="token-meta">💬 ${t.reason}</div>`:''}
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;">
+          <span class="token-status-badge status-${t.status}">${capitalize(t.status)}</span>
+          ${currentRole!=='patient'?`<div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end;">
+            <button class="btn btn-sm btn-secondary" onclick="setTokenStatus('${id}','called')">Call</button>
+            <button class="btn btn-sm btn-teal" onclick="setTokenStatus('${id}','consulting')">Consult</button>
+            <button class="btn btn-sm btn-primary" onclick="setTokenStatus('${id}','done')">Done</button>
+          </div>`:''}
+        </div>
+      </div>`).join('');
+  });
+}
+
+function setTokenStatus(id,status){
+  db.ref('tokens/'+id).update({status}).then(()=>{
+    loadAllTokens();
+    db.ref('notifications').push({title:'Token Update',body:`Status changed to ${status}`,timestamp:Date.now()});
+  });
+}
+
+let _callClinicId='', _callDate='';
+function callTokens(){
+  const input=document.getElementById('callTokenInput').value.trim();
+  if(!input)return;
+  activeCallTokens=[];
+  if(input.includes('-')){const[a,b]=input.split('-').map(Number);for(let i=a;i<=b;i++)activeCallTokens.push(i);}
+  else activeCallTokens=input.split(',').map(n=>parseInt(n.trim())).filter(n=>!isNaN(n));
+  const clinicFilter=document.getElementById('tokenClinicFilter').value;
+  const dateFilter=document.getElementById('tokenDateFilter').value||today();
+  db.ref('tokens').orderByChild('date').equalTo(dateFilter).once('value').then(snap=>{
+    let tokens=Object.entries(snap.val()||{});
+    if(clinicFilter) tokens=tokens.filter(([,t])=>t.clinicId===clinicFilter);
+    const toCall=tokens.filter(([,t])=>activeCallTokens.includes(t.tokenNum));
+    toCall.forEach(([id])=>db.ref('tokens/'+id).update({status:'called'}));
+    setTimeout(loadAllTokens,500);
+    showNotif('📣','Tokens Called',`Calling token(s): ${activeCallTokens.join(', ')}`);
+  });
+}
+function markConsulting(){
+  const dateFilter=document.getElementById('tokenDateFilter').value||today();
+  const clinicFilter=document.getElementById('tokenClinicFilter').value;
+  db.ref('tokens').orderByChild('date').equalTo(dateFilter).once('value').then(snap=>{
+    let tokens=Object.entries(snap.val()||{});
+    if(clinicFilter) tokens=tokens.filter(([,t])=>t.clinicId===clinicFilter);
+    tokens.filter(([,t])=>activeCallTokens.includes(t.tokenNum)).forEach(([id])=>db.ref('tokens/'+id).update({status:'consulting'}));
+    setTimeout(loadAllTokens,500);
+  });
+}
+function markDone(){
+  const dateFilter=document.getElementById('tokenDateFilter').value||today();
+  const clinicFilter=document.getElementById('tokenClinicFilter').value;
+  db.ref('tokens').orderByChild('date').equalTo(dateFilter).once('value').then(snap=>{
+    let tokens=Object.entries(snap.val()||{});
+    if(clinicFilter) tokens=tokens.filter(([,t])=>t.clinicId===clinicFilter);
+    tokens.filter(([,t])=>activeCallTokens.includes(t.tokenNum)).forEach(([id])=>db.ref('tokens/'+id).update({status:'done'}));
+    setTimeout(loadAllTokens,500);
+  });
+}
+
+/* ══════════════════════════════════════════════════
+   PATIENT VIEW
+══════════════════════════════════════════════════ */
+function loadPatientView(){ loadBookClinics(); }
+
+function loadBookClinics(){
+  db.ref('clinics').once('value').then(snap=>{
+    const clinics=snap.val()||{};
+    const sel=document.getElementById('bookClinicSelect');
+    const openClinics=Object.entries(clinics);
+    sel.innerHTML='<option value="">-- Choose Clinic --</option>'+
+      openClinics.map(([id,c])=>`<option value="${id}">${c.name} — ${c.location}</option>`).join('');
+    checkClinicTokenOpen();
+  });
+}
+
+function checkClinicTokenOpen(){
+  const clinicId=document.getElementById('bookClinicSelect').value;
+  const banner=document.getElementById('tokenOpenBanner');
+  const bannerText=document.getElementById('tokenOpenBannerText');
+  const availBadge=document.getElementById('patAvailBadge');
+  if(!clinicId){
+    banner.className='token-open-status closed';
+    bannerText.textContent='Select a clinic to check availability';
+    availBadge.textContent='Select a clinic';
+    return;
+  }
+  db.ref('clinics/'+clinicId).once('value').then(snap=>{
+    const c=snap.val();
+    const isOpen=isClinicOpenNow(c);
+    if(isOpen){
+      banner.className='token-open-status open';
+      bannerText.textContent='🟢 Token booking is OPEN now — Book your slot!';
+      availBadge.textContent='✅ Available Now';
+    } else {
+      const hh=new Date().getHours()*60+new Date().getMinutes();
+      let msg='Token booking is currently CLOSED';
+      if(c.tokenOpen===false) msg='Token booking manually closed by clinic';
+      else if(c.morningOpen&&hh<timeToMin(c.morningOpen)) msg=`Morning session opens at ${fmt12(c.morningOpen)}`;
+      else if(c.morningClose&&hh>timeToMin(c.morningClose)&&c.eveningOpen&&hh<timeToMin(c.eveningOpen)) msg=`Evening session opens at ${fmt12(c.eveningOpen)}`;
+      else if(c.eveningClose&&hh>timeToMin(c.eveningClose)) msg=`Clinic closed for today. Opens tomorrow.`;
+      banner.className='token-open-status closed';
+      bannerText.textContent='🔴 '+msg;
+      availBadge.textContent='Booking Closed';
+    }
+  });
+}
+
+function selectSession(s){
+  selectedSession=s;
+  document.getElementById('sess-morning').classList.toggle('selected',s==='morning');
+  document.getElementById('sess-evening').classList.toggle('selected',s==='evening');
+}
+
+async function bookToken(){
+  const clinicId=document.getElementById('bookClinicSelect').value;
+  const date=document.getElementById('bookDate').value;
+  const name=document.getElementById('bookName').value.trim();
+  const phone=document.getElementById('bookPhone').value.trim();
+  const reason=document.getElementById('bookReason').value.trim();
+  const msg=document.getElementById('bookMsg');
+  if(!clinicId||!date||!name){msg.innerHTML='<div class="alert alert-error">Please fill all required fields.</div>';return;}
+  const holSnap=await db.ref('holidays').orderByChild('date').equalTo(date).once('value');
+  if(holSnap.val()){msg.innerHTML='<div class="alert alert-error">🚫 This date is a holiday.</div>';return;}
+  if(date<today()){msg.innerHTML='<div class="alert alert-error">Cannot book past dates.</div>';return;}
+  const clinicSnap=await db.ref('clinics/'+clinicId).once('value');
+  const clinic=clinicSnap.val();
+  if(!isClinicOpenNow(clinic)){msg.innerHTML='<div class="alert alert-error">🔴 Token booking is closed for this clinic right now.</div>';return;}
+  const existSnap=await db.ref('tokens').orderByChild('clinicDateSession').equalTo(clinicId+'_'+date+'_'+selectedSession).once('value');
+  const existing=existSnap.val()||{};
+  const count=Object.keys(existing).length;
+  if(count>=(clinic.maxTokens||30)){msg.innerHTML='<div class="alert alert-error">Token limit reached for this session.</div>';return;}
+  const userTokens=Object.values(existing).filter(t=>t.userId===currentUser.uid);
+  if(userTokens.length){msg.innerHTML=`<div class="alert alert-info">You already have Token #${userTokens[0].tokenNum} for this session.</div>`;return;}
+  const tokenNum=count+1;
+  await db.ref('tokens').push({clinicId,clinicName:clinic.name,date,session:selectedSession,clinicDateSession:clinicId+'_'+date+'_'+selectedSession,tokenNum,patientName:name,phone,reason,userId:currentUser.uid,userEmail:currentUser.email,status:'waiting',bookedAt:Date.now()});
+  msg.innerHTML=`<div class="alert alert-success">🎉 Token #${tokenNum} booked for ${clinic.name}!</div>`;
+  setTimeout(()=>{msg.innerHTML='';switchTab('mytoken');},2000);
+}
+
+function loadMyToken(){
+  const el=document.getElementById('myTokenSection');
+  el.innerHTML='<div class="loading">Loading your token…</div>';
+  db.ref('tokens').orderByChild('userId').equalTo(currentUser.uid).once('value').then(snap=>{
+    const tokens=Object.values(snap.val()||{}).filter(t=>t.date===today());
+    if(!tokens.length){el.innerHTML=`<div class="empty-state"><div class="empty-icon">🎫</div><div class="empty-text">No token for today.<br>Book from the <strong>Book</strong> tab!</div></div>`;return;}
+    tokens.sort((a,b)=>a.tokenNum-b.tokenNum);
+    el.innerHTML=tokens.map(t=>{
+      const sc={waiting:'#00796B',called:'#F57F17',consulting:'#4527A0',done:'#1B5E20'}[t.status]||'#00796B';
+      const sm={waiting:'⏳ Please wait. Your turn is coming.',called:'📣 Your token is called! Please come in.',consulting:'🩺 Consultation in progress.',done:'✅ Consultation completed. Thank you!'}[t.status]||'';
+      return `<div class="my-token-display">
+        <div style="font-size:12px;color:var(--text3);margin-bottom:4px;">${t.clinicName}</div>
+        <div class="big-token-num">${t.tokenNum}</div>
+        <div class="big-token-label">Your Token Number</div>
+        <div class="token-queue-info">${t.session==='morning'?'🌅':'🌆'} ${capitalize(t.session)} · ${fmtDate(t.date)}</div>
+      </div>
+      <div class="card" style="text-align:center;padding:14px;">
+        <div style="font-size:28px;margin-bottom:6px;">${{waiting:'⏳',called:'📣',consulting:'🩺',done:'✅'}[t.status]}</div>
+        <div style="font-size:16px;font-weight:600;color:${sc};">${capitalize(t.status)}</div>
+        <div style="font-size:12px;color:var(--text2);margin-top:5px;">${sm}</div>
+      </div>`;
+    }).join('');
+    db.ref('tokens').orderByChild('userId').equalTo(currentUser.uid).on('child_changed',snap=>{
+      const t=snap.val();
+      if(t.date===today()){
+        const msgs={called:`📣 Token #${t.tokenNum} is called!`,consulting:`🩺 Your consultation has started.`,done:`✅ Your consultation is complete.`};
+        if(msgs[t.status]) showNotif('🔔','Your Token',msgs[t.status]);
+        loadMyToken();
+      }
+    });
+  });
+}
+
+function loadPatientHistory(){
+  db.ref('tokens').orderByChild('userId').equalTo(currentUser.uid).once('value').then(snap=>{
+    const tokens=Object.values(snap.val()||{}).sort((a,b)=>b.bookedAt-a.bookedAt);
+    const el=document.getElementById('patientHistory');
+    if(!tokens.length){el.innerHTML='<div class="empty-state"><div class="empty-icon">📜</div><div class="empty-text">No past tokens.</div></div>';return;}
+    el.innerHTML=tokens.map(t=>`
+      <div class="history-item">
+        <div class="h-date">${fmtDate(t.date)} · ${t.session==='morning'?'🌅':'🌆'} ${capitalize(t.session)}</div>
+        <div class="h-clinic">🏥 ${t.clinicName}</div>
+        <div class="h-token">Token #${t.tokenNum} · <span class="token-status-badge status-${t.status}">${capitalize(t.status)}</span></div>
+        ${t.reason?`<div class="h-date" style="margin-top:3px;">💬 ${t.reason}</div>`:''}
+      </div>`).join('');
+  });
+}
+
+/* ══════════════════════════════════════════════════
+   NOTIFICATIONS
+══════════════════════════════════════════════════ */
+function subscribeNotifications(){
+  const cutoff=Date.now()-2000;
+  db.ref('notifications').orderByChild('timestamp').startAt(cutoff).on('child_added',snap=>{
+    const n=snap.val(); if(!n)return;
+    if(currentRole==='doctor'||currentRole==='assistant') showNotif('🔔',n.title||'Update',n.body||'');
+  });
+}
+function showNotif(icon,title,body){
+  document.getElementById('notifIcon').textContent=icon;
+  document.getElementById('notifTitle').textContent=title;
+  document.getElementById('notifBody').textContent=body;
+  document.getElementById('popupNotif').classList.add('show');
+  if(notifTimer)clearTimeout(notifTimer);
+  notifTimer=setTimeout(hideNotif,5000);
+}
+function hideNotif(){document.getElementById('popupNotif').classList.remove('show');}
+
+/* ══════════════════════════════════════════════════
+   AD TEXT
+══════════════════════════════════════════════════ */
+function saveAdText(){
+  const txt=document.getElementById('adTextInput').value.trim();
+  db.ref('settings/adText').set(txt).then(()=>{
+    document.getElementById('adSaveMsg').innerHTML='<div class="alert alert-success">Ad text saved!</div>';
+    setTimeout(()=>document.getElementById('adSaveMsg').innerHTML='',2000);
+  });
+}
+
+document.addEventListener('click',e=>{
+  if(e.target&&e.target.classList.contains('modal-overlay')) e.target.classList.remove('open');
 });
 </script>
 </body>
