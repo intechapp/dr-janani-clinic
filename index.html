@@ -965,9 +965,16 @@ window.signInWithApple = async () => {
 window.signInWithEmail = async () => {
   const email = document.getElementById('login-email').value;
   const pass = document.getElementById('login-password').value;
+  if (!email || !pass) { showAuthError('Please enter your email and password.'); return; }
   try {
     await signInWithEmailAndPassword(auth, email, pass);
-  } catch(e) { showAuthError(e.message); }
+    // onAuthStateChanged will handle the redirect
+  } catch(e) {
+    const msg = e.code === 'auth/invalid-credential' || e.code === 'auth/wrong-password' || e.code === 'auth/user-not-found'
+      ? 'Invalid email or password. Please try again.'
+      : e.message;
+    showAuthError(msg);
+  }
 };
 window.registerWithEmail = async () => {
   const name  = document.getElementById('reg-name').value;
@@ -979,8 +986,16 @@ window.registerWithEmail = async () => {
   try {
     const cred = await createUserWithEmailAndPassword(auth, email, pass);
     await set(ref(db, `users/${cred.user.uid}`), { name, email, phone, age, role: 'patient', createdAt: Date.now() });
-    showToast('Account created successfully!', 'success');
-  } catch(e) { showAuthError(e.message); }
+    showToast('Account created! Welcome to EVA.', 'success');
+    // onAuthStateChanged will fire and redirect to home/profile
+  } catch(e) {
+    const msg = e.code === 'auth/email-already-in-use'
+      ? 'This email is already registered. Please sign in instead.'
+      : e.code === 'auth/weak-password'
+      ? 'Password must be at least 6 characters.'
+      : e.message;
+    showAuthError(msg);
+  }
 };
 window.logoutUser = async () => {
   await signOut(auth);
@@ -1157,7 +1172,7 @@ async function loadClinics() {
   // Seed default clinics if empty
   if (Object.keys(clinicsData).length === 0) {
     const c1 = push(ref(db, 'clinics'));
-    await set(c1, { name: 'Tirunelveli Clinic', location: 'Main Road, Tirunelveli', openTime: '06:00', closeTime: '16:00', active: true, createdAt: Date.now() });
+    await set(c1, { name: 'Tirunelveli Clinic', location: 'Main Road, Tirunelveli', openTime: '06:00', closeTime: '08:00', active: true, createdAt: Date.now() });
     const c2 = push(ref(db, 'clinics'));
     await set(c2, { name: 'Tenkasi Clinic', location: 'Main Road, Tenkasi', openTime: '16:00', closeTime: '18:00', active: true, createdAt: Date.now() });
     const snap2 = await get(ref(db, 'clinics'));
@@ -1423,10 +1438,12 @@ onAuthStateChanged(auth, async (user) => {
     if (userRole === 'doctor') showPage('doctor');
     else if (userRole === 'assistant') showPage('assistant');
     else {
-      showPage('home');
-      // Check if profile incomplete
+      // Direct to profile if incomplete, otherwise home
       if (!userProfile.name || !userProfile.phone) {
-        setTimeout(() => { showToast('Please complete your profile to book tokens!', 'error'); showPage('profile'); }, 1000);
+        showPage('profile');
+        setTimeout(() => { showToast('Welcome! Please complete your profile to book tokens.', 'error'); }, 300);
+      } else {
+        showPage('home');
       }
     }
   } else {
