@@ -1157,7 +1157,7 @@ async function loadClinics() {
   // Seed default clinics if empty
   if (Object.keys(clinicsData).length === 0) {
     const c1 = push(ref(db, 'clinics'));
-    await set(c1, { name: 'Tirunelveli Clinic', location: 'Main Road, Tirunelveli', openTime: '06:00', closeTime: '08:00', active: true, createdAt: Date.now() });
+    await set(c1, { name: 'Tirunelveli Clinic', location: 'Main Road, Tirunelveli', openTime: '06:00', closeTime: '16:00', active: true, createdAt: Date.now() });
     const c2 = push(ref(db, 'clinics'));
     await set(c2, { name: 'Tenkasi Clinic', location: 'Main Road, Tenkasi', openTime: '16:00', closeTime: '18:00', active: true, createdAt: Date.now() });
     const snap2 = await get(ref(db, 'clinics'));
