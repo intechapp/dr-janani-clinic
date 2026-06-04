@@ -896,6 +896,7 @@
 const firebaseConfig = {
   apiKey: "AIzaSyD8-BsJofqoyLYTXoEwCxpal_wcoFbWYjw",
   authDomain: "token-f9676.firebaseapp.com",
+  databaseURL: "https://token-f9676-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId: "token-f9676",
   storageBucket: "token-f9676.firebasestorage.app",
   messagingSenderId: "419767499771",
@@ -1038,26 +1039,17 @@ function buildTabs() {
 }
 
 function switchTab(id) {
+  // Hide all tab contents
   document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  const tc = document.getElementById('tab-'+id);
+  // Show target
+  const tc = document.getElementById('tab-' + id);
   if (tc) tc.classList.add('active');
-  document.querySelectorAll('.tab-btn').forEach(b => {
-    if (b.textContent.includes(id) || b.onclick.toString().includes(id)) b.classList.add('active');
-  });
-  // Re-apply by label match
-  document.querySelectorAll('.tab-btn').forEach(b => {
-    if (b.getAttribute('data-tab') === id) b.classList.add('active');
-  });
-  // Simpler: re-build active state
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  // Update tab button active state
   const tabs = currentRole === 'doctor' ? DOCTOR_TABS :
                currentRole === 'assistant' ? ASSISTANT_TABS : PATIENT_TABS;
-  tabs.forEach((t,i) => {
-    const btn = document.querySelectorAll('.tab-btn')[i];
-    if (btn && t.id === id) btn.classList.add('active');
+  document.querySelectorAll('.tab-btn').forEach((btn, i) => {
+    btn.classList.toggle('active', tabs[i] && tabs[i].id === id);
   });
-
   // Load tab-specific data
   if (id === 'tokens') loadAllTokens();
   if (id === 'clinics') loadManageClinics();
